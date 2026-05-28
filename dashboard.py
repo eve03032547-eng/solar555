@@ -842,7 +842,7 @@ if df is not None:
                     name='ผู้ใช้ที่หายไป (Lost)',
                     marker_color='#dc3545',
                     hovertemplate='<b>%{x}</b><br>Lost Users: %{y:,}<extra></extra>'
-                )
+                ))
                 
                 # ตั้งค่า Layout ของกราฟ
                 fig.update_layout(
