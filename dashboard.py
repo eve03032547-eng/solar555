@@ -22,7 +22,7 @@ pio.templates.default = "plotly_white"
 pio.templates["plotly_white"].layout.font.family = "'Prompt', sans-serif"
 
 # ตั้งค่าหน้าจอ Dashboard
-st.set_page_config(page_title="Solar Cell Sales Platform", page_icon="☀️", layout="wide")
+st.set_page_config(page_title="Solar Cell Sales Platform", page_icon="☀️", layout="wide", initial_sidebar_state="collapsed")
 
 # --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
 st.markdown("""
@@ -101,17 +101,67 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, 
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0f172a, #1e293b);
     }
+    
+    /* สีสำหรับแท็บเมนูในโหมดมืด */
+    div.stRadio > div[role="radiogroup"] > label {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+    div.stRadio > div[role="radiogroup"] > label:hover {
+        background-color: #0f172a;
+        border-color: #38bdf8;
+    }
+}
+
+/* 🌟 แปลง Radio Button ทั้งหมดให้กลายเป็นปุ่ม Tab (Top Navigation Bar) */
+div.stRadio > div[role="radiogroup"] {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding-bottom: 10px;
+}
+div.stRadio > div[role="radiogroup"] > label {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+div.stRadio > div[role="radiogroup"] > label:hover {
+    border-color: #0ea5e9;
+    transform: translateY(-2px);
+}
+div.stRadio > div[role="radiogroup"] > label[data-checked="true"], 
+div.stRadio > div[role="radiogroup"] > label[aria-checked="true"] {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+}
+div.stRadio > div[role="radiogroup"] > label[data-checked="true"] p,
+div.stRadio > div[role="radiogroup"] > label[aria-checked="true"] p {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+/* ซ่อนวงกลมจุดๆ ของ Radio */
+div.stRadio > div[role="radiogroup"] > label > div:first-child {
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# --- เมนูนำทาง (Sidebar Navigation) ---
-st.sidebar.title("🧭 เมนูนำทาง")
-page = st.sidebar.radio(
-    "เลือกหน้าต่างการใช้งาน:", 
-    ["🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)", "📊 แดชบอร์ดวิเคราะห์", "🎯 ค้นหาลูกค้าเป้าหมาย", "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)", "🏦 บริการด้านสินเชื่อ"]
+
+# --- เมนูนำทาง (Top Navigation) ---
+page = st.radio(
+    "🧭 เลือกหน้าต่างการใช้งาน:", 
+    ["🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)", "📊 แดชบอร์ดวิเคราะห์", "🎯 ค้นหาลูกค้าเป้าหมาย", "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)", "🏦 บริการด้านสินเชื่อ"],
+    horizontal=True,
+    label_visibility="collapsed"
 )
-st.sidebar.divider()
+st.divider()
 
 # ฟังก์ชันค้นหาไฟล์ภาพอัจฉริยะ (ค้นหาทุกโฟลเดอร์ ไม่สนตัวเล็ก/ใหญ่)
 def get_image_path(file_name, default_folder=""):
@@ -554,7 +604,7 @@ if df is not None:
                     show_details("แพ็กเกจ", ">15 kW", "500,000 - 550,000 บาทขึ้นไป", "- แผงโซล่าร์เซลล์ (550W) จำนวน 30 แผงขึ้นไป\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- ออกแบบระบบและประเมินโหลดตามการใช้งานจริง\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xxl, panel_models=panel_models_std)
             
         st.divider()
-        st.markdown("👈 **กรุณาเลือกเมนูที่แถบด้านซ้ายมือ** เพื่อวิเคราะห์ข้อมูลพฤติกรรมการใช้ไฟฟ้า และค้นหาลูกค้าเป้าหมายสำหรับเสนอโครงการ")
+        st.markdown("👆 **กรุณาเลือกเมนูที่แถบด้านบน** เพื่อวิเคราะห์ข้อมูลพฤติกรรมการใช้ไฟฟ้า และค้นหาลูกค้าเป้าหมายสำหรับเสนอโครงการ")
         
         st.stop() # หยุดการทำงานสคริปต์ตรงนี้ เพื่อไม่ให้แสดงผลหน้าอื่นซ้อนกัน
 
