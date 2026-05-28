@@ -149,7 +149,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **จุดเด่น:** อัตราดอกเบี้ยต่ำเพียง 3% ต่อปี คงที่ 3 ปีแรก เพื่อยกระดับและเพิ่มผลิตภาพธุรกิจสีเขียว")
                 st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.smebank.co.th/products/sme-green-productivity/", use_container_width=True)
         with b4:
-             with st.container(border=True):
+            with st.container(border=True):
                 st.markdown("### 💡 สนใจขอรับบริการสินเชื่อ")
                 st.markdown("ลูกค้าที่สนใจสามารถแจ้งความประสงค์ผ่านสำนักงานการไฟฟ้าส่วนภูมิภาค (PEA) ที่ดูแลโครงการ หรือติดต่อสาขาของธนาคารพันธมิตรทั่วประเทศ")
                 st.info("เงื่อนไขการอนุมัติสินเชื่อ วงเงิน และอัตราดอกเบี้ย เป็นไปตามที่แต่ละธนาคารกำหนด")
@@ -802,7 +802,6 @@ if df is not None:
                     name='ผู้ใช้ที่หายไป (Lost)',
                     marker_color='#dc3545',
                     hovertemplate='<b>%{x}</b><br>Lost Users: %{y:,}<extra></extra>'
-                )
                 )
                 
                 # ตั้งค่า Layout ของกราฟ
