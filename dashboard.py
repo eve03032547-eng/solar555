@@ -29,15 +29,18 @@ st.sidebar.divider()
 
 # ฟังก์ชันค้นหาไฟล์ภาพอัจฉริยะ (ค้นหาทุกโฟลเดอร์ ไม่สนตัวเล็ก/ใหญ่)
 def get_image_path(file_name, default_folder=""):
-    # 1. ค้นหาตรงๆ ก่อนเพื่อความรวดเร็ว
-    if os.path.exists(file_name):
-        return file_name
-    elif os.path.exists(os.path.join(default_folder, file_name)):
-        return os.path.join(default_folder, file_name)
+    # อ้างอิงที่อยู่ของไฟล์โค้ดโดยตรง ป้องกันปัญหา Path คลาดเคลื่อนบน Cloud
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 2. ค้นหาแบบกวาดทุกโฟลเดอร์ (เพิกเฉยตัวพิมพ์เล็ก-ใหญ่)
+    # 1. ค้นหาตรงๆ ก่อนเพื่อความรวดเร็ว
+    path1 = os.path.join(base_dir, file_name)
+    if os.path.exists(path1): return path1
+    path2 = os.path.join(base_dir, default_folder, file_name)
+    if os.path.exists(path2): return path2
+    
+    # 2. ค้นหาแบบกวาดทุกโฟลเดอร์
     target = file_name.lower()
-    for root, _, files in os.walk("."):
+    for root, _, files in os.walk(base_dir):
         if ".git" in root or "__pycache__" in root: continue
         for f in files:
             if f.lower() == target:
