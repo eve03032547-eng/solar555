@@ -27,19 +27,31 @@ page = st.sidebar.radio(
 )
 st.sidebar.divider()
 
-# ฟังก์ชันสำหรับค้นหาไฟล์รูปภาพ ทั้งหน้าแรกและโฟลเดอร์ย่อย (รองรับทั้งตอนรันในเครื่องและบน Cloud)
+# ฟังก์ชันค้นหาไฟล์ภาพอัจฉริยะ (ค้นหาทุกโฟลเดอร์ ไม่สนตัวเล็ก/ใหญ่)
 def get_image_path(file_name, default_folder=""):
+    # 1. ค้นหาตรงๆ ก่อนเพื่อความรวดเร็ว
     if os.path.exists(file_name):
         return file_name
     elif os.path.exists(os.path.join(default_folder, file_name)):
         return os.path.join(default_folder, file_name)
-    # ป้องกันแอปพัง หากหาไฟล์ไม่เจอ (เช่น ตัวพิมพ์เล็ก/ใหญ่ไม่ตรงกัน) ให้ใช้รูปจำลองแทน
+    
+    # 2. ค้นหาแบบกวาดทุกโฟลเดอร์ (เพิกเฉยตัวพิมพ์เล็ก-ใหญ่)
+    target = file_name.lower()
+    for root, _, files in os.walk("."):
+        if ".git" in root or "__pycache__" in root: continue
+        for f in files:
+            if f.lower() == target:
+                return os.path.join(root, f).replace("\\", "/")
+                
+    # 3. ถ้าหาไม่เจอจริงๆ ให้แสดงเป็นภาพ Placeholder แทน
     return "https://placehold.co/600x400.png?text=Image+Not+Found"
 
 # ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
 import base64
 def get_base64_image(file_name, folder_name="Logo"):
     image_path = get_image_path(file_name, folder_name)
+    if str(image_path).startswith("http"):
+        return image_path
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
             b64 = base64.b64encode(img_file.read()).decode()
@@ -62,26 +74,6 @@ if page == "🏦 บริการด้านสินเชื่อ":
     ช่วยลดภาระการลงทุนก้อนแรก ทำให้คุณเป็นเจ้าของระบบโซล่าร์เซลล์ได้ง่ายขึ้น ด้วยอัตราดอกเบี้ยพิเศษและระยะเวลาผ่อนชำระที่ยาวนาน คุ้มค่ากับเงินที่ประหยัดได้จากค่าไฟในแต่ละเดือน
     """)
     st.divider()
-
-    # ฟังก์ชันสำหรับค้นหาไฟล์รูปภาพ ทั้งหน้าแรกและโฟลเดอร์ย่อย (รองรับทั้งตอนรันในเครื่องและบน Cloud)
-    def get_image_path(file_name, default_folder=""):
-        if os.path.exists(file_name):
-            return file_name
-        elif os.path.exists(os.path.join(default_folder, file_name)):
-            return os.path.join(default_folder, file_name)
-        return file_name
-
-    # ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
-    import base64
-    def get_base64_image(file_name, folder_name="Logo"):
-        image_path = get_image_path(file_name, folder_name)
-        if os.path.exists(image_path):
-            with open(image_path, "rb") as img_file:
-                b64 = base64.b64encode(img_file.read()).decode()
-                ext = image_path.split('.')[-1].lower()
-                mime = 'jpeg' if ext == 'jpg' else ext
-                return f"data:image/{mime};base64,{b64}"
-        return ""
 
     # แบ่งเป็น 2 แท็บ: สำหรับบ้านพักอาศัย และ สำหรับภาคธุรกิจ
     tab1, tab2 = st.tabs(["🏠 สินเชื่อสำหรับบ้านพักอาศัย", "🏢 สินเชื่อสำหรับภาคธุรกิจ (SME & Corporate)"])
