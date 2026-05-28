@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import requests
 import sys
 import subprocess
@@ -16,8 +17,93 @@ if not st.runtime.exists():
 
 from read_all_csv import read_all_csv_in_directory, process_pea_data
 
+# ตั้งค่าฟอนต์เริ่มต้นให้กับกราฟ Plotly ทั้งหมด
+pio.templates.default = "plotly_white"
+pio.templates["plotly_white"].layout.font.family = "'Prompt', sans-serif"
+
 # ตั้งค่าหน้าจอ Dashboard
 st.set_page_config(page_title="Solar Cell Sales Platform", page_icon="☀️", layout="wide")
+
+# --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
+st.markdown("""
+<style>
+/* นำเข้าฟอนต์ Prompt จาก Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+/* บังคับใช้ฟอนต์ Prompt กับทุกส่วนของเว็บ */
+html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, h6, button, input, select {
+    font-family: 'Prompt', sans-serif !important;
+}
+
+/* 📊 ตกแต่ง Metric Cards (กล่องตัวเลข) */
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-left: 5px solid #0284c7;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+[data-testid="stMetric"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+/* 🗂️ ตกแต่ง Container (แบบ Card 3D) ให้แสดงผลทุกหน้า */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 16px;
+    background-color: #ffffff;
+    box-shadow: 
+        0 8px 15px rgba(0,0,0,0.05), 
+        0 3px 6px rgba(0,0,0,0.02), 
+        inset 0 2px 4px rgba(255,255,255,0.8);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+[data-testid="stVerticalBlockBorderWrapper"]:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 
+        0 15px 25px rgba(0,0,0,0.1), 
+        0 5px 10px rgba(0,0,0,0.04);
+    border-color: #e2e8f0;
+}
+
+/* ตกแต่ง Sidebar ให้ดูมีมิติ */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f8fafc, #eff6ff);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
+/* ปุ่มทั่วไป (ปุ่มกด/ปุ่มลิงก์) */
+.stButton > button {
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+.stButton > button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* 🌙 รองรับ Dark Mode (สลับสีอัตโนมัติหากผู้ใช้เปิดธีมมืด) */
+@media (prefers-color-scheme: dark) {
+    [data-testid="stMetric"] {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        border: 1px solid #334155;
+        border-left: 5px solid #38bdf8;
+    }
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #1e1e1e;
+        border-color: #333333;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0f172a, #1e293b);
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --- เมนูนำทาง (Sidebar Navigation) ---
 st.sidebar.title("🧭 เมนูนำทาง")
@@ -316,52 +402,6 @@ if df is not None:
         st.divider()
         
         st.subheader("📦 แพ็กเกจการติดตั้งมาตรฐาน (ราคาโดยประมาณ)")
-        
-        # ใส่ CSS เพื่อตกแต่ง st.container ให้เป็นรูปแบบการ์ด (Card) ที่มีเอฟเฟกต์ตอนเอาเมาส์ชี้แบบ 3 มิติ
-        st.markdown("""
-        <style>
-        [data-testid="stVerticalBlockBorderWrapper"] {
-            border-radius: 16px;
-            background-color: #ffffff;
-            /* เพิ่มเงาหลายชั้น ทั้งด้านนอกและด้านในเพื่อสร้างความลึก 3 มิติ */
-            box-shadow: 
-                0 8px 15px rgba(0,0,0,0.08), 
-                0 3px 6px rgba(0,0,0,0.04), 
-                inset 0 2px 4px rgba(255,255,255,0.8), 
-                inset 0 -3px 5px rgba(0,0,0,0.04);
-            border: 1px solid #f0f0f0;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* เอฟเฟกต์เด้งแบบสปริงนิดๆ */
-        }
-        [data-testid="stVerticalBlockBorderWrapper"]:hover {
-            /* ขยับการ์ดให้ลอยขึ้นและขยายขนาดเล็กน้อย */
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 
-                0 15px 25px rgba(0,0,0,0.15), 
-                0 10px 10px rgba(0,0,0,0.05), 
-                inset 0 2px 4px rgba(255,255,255,0.9), 
-                inset 0 -3px 5px rgba(0,0,0,0.04);
-            border-color: #e2e8f0;
-        }
-        /* รองรับ Dark Mode ให้การ์ดกลมกลืน */
-        @media (prefers-color-scheme: dark) {
-            [data-testid="stVerticalBlockBorderWrapper"] {
-                background-color: #1e1e1e;
-                border-color: #333333;
-                box-shadow: 
-                    0 8px 15px rgba(0,0,0,0.3), 
-                    inset 0 1px 2px rgba(255,255,255,0.1), 
-                    inset 0 -3px 5px rgba(0,0,0,0.3);
-            }
-            [data-testid="stVerticalBlockBorderWrapper"]:hover {
-                box-shadow: 
-                    0 15px 25px rgba(0,0,0,0.5), 
-                    inset 0 1px 2px rgba(255,255,255,0.15), 
-                    inset 0 -3px 5px rgba(0,0,0,0.3);
-                border-color: #444444;
-            }
-        }
-        </style>
-        """, unsafe_allow_html=True)
         
         # ฟังก์ชันสำหรับเปิดหน้าต่าง Modal/Dialog แสดงรายละเอียดแพ็กเกจแบบกว้าง
         @st.dialog("📋 รายละเอียดแพ็กเกจการติดตั้ง", width="large")
