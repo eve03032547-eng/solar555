@@ -33,7 +33,8 @@ def get_image_path(file_name, default_folder=""):
         return file_name
     elif os.path.exists(os.path.join(default_folder, file_name)):
         return os.path.join(default_folder, file_name)
-    return file_name
+    # ป้องกันแอปพัง หากหาไฟล์ไม่เจอ (เช่น ตัวพิมพ์เล็ก/ใหญ่ไม่ตรงกัน) ให้ใช้รูปจำลองแทน
+    return "https://placehold.co/600x400.png?text=Image+Not+Found"
 
 # ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
 import base64
@@ -385,7 +386,7 @@ if df is not None:
                     with p_cols[i]:
                         with st.container(border=True):
                             if 'image' in p_model:
-                                if os.path.exists(p_model['image']):
+                            if str(p_model['image']).startswith("http") or os.path.exists(p_model['image']):
                                     st.image(p_model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {p_model['image']}")
@@ -408,7 +409,7 @@ if df is not None:
                     with cols[i]:
                         with st.container(border=True):
                             if 'image' in model:
-                                if os.path.exists(model['image']):
+                            if str(model['image']).startswith("http") or os.path.exists(model['image']):
                                     st.image(model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {model['image']}")
