@@ -386,7 +386,7 @@ if df is not None:
                     with p_cols[i]:
                         with st.container(border=True):
                             if 'image' in p_model:
-                            if str(p_model['image']).startswith("http") or os.path.exists(p_model['image']):
+                                if str(p_model['image']).startswith("http") or os.path.exists(p_model['image']):
                                     st.image(p_model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {p_model['image']}")
@@ -409,7 +409,7 @@ if df is not None:
                     with cols[i]:
                         with st.container(border=True):
                             if 'image' in model:
-                            if str(model['image']).startswith("http") or os.path.exists(model['image']):
+                                if str(model['image']).startswith("http") or os.path.exists(model['image']):
                                     st.image(model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {model['image']}")
