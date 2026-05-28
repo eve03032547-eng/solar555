@@ -27,6 +27,25 @@ page = st.sidebar.radio(
 )
 st.sidebar.divider()
 
+# ฟังก์ชันสำหรับค้นหาไฟล์รูปภาพ ทั้งหน้าแรกและโฟลเดอร์ย่อย (รองรับทั้งตอนรันในเครื่องและบน Cloud)
+def get_image_path(file_name, default_folder=""):
+    if os.path.exists(file_name):
+        return file_name
+    elif os.path.exists(os.path.join(default_folder, file_name)):
+        return os.path.join(default_folder, file_name)
+    return file_name
+
+# ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
+import base64
+def get_base64_image(file_name, folder_name="Logo"):
+    image_path = get_image_path(file_name, folder_name)
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            b64 = base64.b64encode(img_file.read()).decode()
+            ext = image_path.split('.')[-1].lower()
+            mime = 'jpeg' if ext == 'jpg' else ext
+            return f"data:image/{mime};base64,{b64}"
+    return ""
 
 # ==========================================
 # ส่วนที่ 5: หน้าบริการด้านสินเชื่อ
@@ -43,9 +62,18 @@ if page == "🏦 บริการด้านสินเชื่อ":
     """)
     st.divider()
 
+    # ฟังก์ชันสำหรับค้นหาไฟล์รูปภาพ ทั้งหน้าแรกและโฟลเดอร์ย่อย (รองรับทั้งตอนรันในเครื่องและบน Cloud)
+    def get_image_path(file_name, default_folder=""):
+        if os.path.exists(file_name):
+            return file_name
+        elif os.path.exists(os.path.join(default_folder, file_name)):
+            return os.path.join(default_folder, file_name)
+        return file_name
+
     # ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
     import base64
-    def get_base64_image(image_path):
+    def get_base64_image(file_name, folder_name="Logo"):
+        image_path = get_image_path(file_name, folder_name)
         if os.path.exists(image_path):
             with open(image_path, "rb") as img_file:
                 b64 = base64.b64encode(img_file.read()).decode()
@@ -399,14 +427,14 @@ if df is not None:
 
         # รายชื่อแผงโซล่าร์เซลล์มาตรฐาน (Tier 1) ที่ใช้กับทุกแพ็กเกจ
         panel_models_std = [ 
-            {"name": "Jinko Tiger Pro 550W", "image": "Jiinko_550w.jpg"},
-            {"name": "LONGI Hi-MO 5 550W", "image": "Longi550w.png"}
+            {"name": "Jinko Tiger Pro 550W", "image": get_image_path("Jiinko_550w.jpg", "package3kW")},
+            {"name": "LONGI Hi-MO 5 550W", "image": get_image_path("Longi550w.png", "package3kW")}
         ]
 
         col1, col2, col3 = st.columns(3)
         with col1:
             with st.container(border=True):
-                st.image("Jiinko_550w.jpg", use_container_width=True)
+                st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #FFD6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #3B0764;">🥉 แพ็กเกจ</h3>
@@ -416,13 +444,13 @@ if df is not None:
                 st.markdown("🏠 เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\n💵 ราคา: **145,000 บาท**\n\n*(เฉลี่ย ~48,333 ฿/kW)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_s", use_container_width=True):
                     models_s = [
-                        {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": "SUN2000-3KTL-L1..webp"},
-                        {"name": "Growatt MIN 3000TL-X", "price": "135,000 บาท", "image": "Growatt-MIN-3000-TL-X.webp"}
+                        {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": get_image_path("SUN2000-3KTL-L1..webp", "package3kW")},
+                        {"name": "Growatt MIN 3000TL-X", "price": "135,000 บาท", "image": get_image_path("Growatt-MIN-3000-TL-X.webp", "package3kW")}
                     ]
                     show_details("แพ็กเกจ", "3 kW", "135,000 - 145,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 5-6 แผง\n- อินเวอร์เตอร์ 1 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 1 ปี", models=models_s, panel_models=panel_models_std)
         with col2:
             with st.container(border=True):
-                st.image("Jiinko_550w.jpg", use_container_width=True)
+                st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #E7C6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #3B0764;">🥈 แพ็กเกจ</h3>
@@ -432,13 +460,13 @@ if df is not None:
                 st.markdown("🏡 เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\n💵 ราคา: **200,000 บาท**\n\n*(เฉลี่ย ~40,000 ฿/kW)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_m", use_container_width=True):
                     models_m = [
-                        {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": "SUN2000-5KTL-L1-01.webp"},
-                        {"name": "Growatt MIN 5000TL-X", "price": "189,000 บาท", "image": "growatt-min-5000tl-x.jpg"}
+                        {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": get_image_path("SUN2000-5KTL-L1-01.webp", "package3kW")},
+                        {"name": "Growatt MIN 5000TL-X", "price": "189,000 บาท", "image": get_image_path("growatt-min-5000tl-x.jpg", "package3kW")}
                     ]
                     show_details("แพ็กเกจ", "5 kW", "189,000 - 200,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 8-10 แผง\n- อินเวอร์เตอร์ 1 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 1 ปี", models=models_m, panel_models=panel_models_std)
         with col3:
             with st.container(border=True):
-                st.image("Jiinko_550w.jpg", use_container_width=True)
+                st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #C8B6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #3B0764;">🥇 แพ็กเกจ</h3>
@@ -448,8 +476,8 @@ if df is not None:
                 st.markdown("🏢 เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\n💵 ราคา: **329,000 บาท**\n\n*(เฉลี่ย ~32,900 ฿/kW)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_l", use_container_width=True):
                     models_l = [
-                        {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": "SUN2000-10KTL-M1-01.webp"},
-                        {"name": "Growatt MOD 10KTL3-X", "price": "315,000 บาท", "image": "growatt-mod-10ktl3-x.jpg"}
+                        {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": get_image_path("SUN2000-10KTL-M1-01.webp", "package3kW")},
+                        {"name": "Growatt MOD 10KTL3-X", "price": "315,000 บาท", "image": get_image_path("growatt-mod-10ktl3-x.jpg", "package3kW")}
                     ]
                     show_details("แพ็กเกจ", "10 kW", "315,000 - 329,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 14-18 แผง\n- อินเวอร์เตอร์ 3 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 2 ปี", models=models_l, panel_models=panel_models_std)
             
@@ -457,7 +485,7 @@ if df is not None:
         col4, col5, col6 = st.columns(3)
         with col4:
             with st.container(border=True):
-                st.image("Jiinko_550w.jpg", use_container_width=True)
+                st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #B8C0FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #3B0764;">💎 แพ็กเกจ</h3>
@@ -467,13 +495,13 @@ if df is not None:
                 st.markdown("🏭 เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\n💵 ราคา: **454,900 บาท**\n\n*(เฉลี่ย ~30,326 ฿/kW)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_xl", use_container_width=True):
                     models_xl = [
-                        {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": "Huawei-SUN2000-15KTL-M2.jpg"},
-                        {"name": "Growatt MID 15KTL3-X", "price": "439,000 บาท", "image": "Growatt MID 15KTL3-X.webp"}
+                        {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": get_image_path("Huawei-SUN2000-15KTL-M2.jpg", "package3kW")},
+                        {"name": "Growatt MID 15KTL3-X", "price": "439,000 บาท", "image": get_image_path("Growatt MID 15KTL3-X.webp", "package3kW")}
                     ]
                     show_details("แพ็กเกจ", "15 kW", "439,000 - 454,900 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 20-28 แผง\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xl, panel_models=panel_models_std)
         with col5:
             with st.container(border=True):
-                st.image("Jiinko_550w.jpg", use_container_width=True)
+                st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #BBD0FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
                     <h3 style="margin: 0; color: #3B0764;">👑 แพ็กเกจ</h3>
@@ -483,9 +511,9 @@ if df is not None:
                 st.markdown("🏭 เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\n💵 ราคา: **550,000 บาทขึ้นไป**\n\n*(เฉลี่ย ~27,500 ฿/kW)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_xxl", use_container_width=True):
                     models_xxl = [
-                        {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": "SUN2000-30KTL-M3.2.webp"},
-                        {"name": "Growatt MID 30KTL3-X", "price": "520,000 บาท", "image": "Growatt MID 30KTL3-X.webp"},
-                        {"name": "Solis 30K-5G", "price": "500,000 บาท", "image": "Solis 30K-5G.jpg"}
+                        {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": get_image_path("SUN2000-30KTL-M3.2.webp", "package3kW")},
+                        {"name": "Growatt MID 30KTL3-X", "price": "520,000 บาท", "image": get_image_path("Growatt MID 30KTL3-X.webp", "package3kW")},
+                        {"name": "Solis 30K-5G", "price": "500,000 บาท", "image": get_image_path("Solis 30K-5G.jpg", "package3kW")}
                     ]
                     show_details("แพ็กเกจ", ">15 kW", "500,000 - 550,000 บาทขึ้นไป", "- แผงโซล่าร์เซลล์ (550W) จำนวน 30 แผงขึ้นไป\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- ออกแบบระบบและประเมินโหลดตามการใช้งานจริง\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xxl, panel_models=panel_models_std)
             
