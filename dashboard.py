@@ -22,7 +22,7 @@ pio.templates.default = "plotly_white"
 pio.templates["plotly_white"].layout.font.family = "'Prompt', sans-serif"
 
 # ตั้งค่าหน้าจอ Dashboard
-st.set_page_config(page_title="Solar Cell Sales Platform", page_icon="☀️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="ระบบวิเคราะห์ผู้ใช้ไฟเพื่อแนะนำการติดตั้งโซลาร์เซลล์", page_icon="☀️", layout="wide", initial_sidebar_state="collapsed")
 
 # --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
 st.markdown("""
