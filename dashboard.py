@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import requests
 import sys
+from streamlit_option_menu import option_menu
 import subprocess
 import os
 
@@ -19,20 +20,73 @@ from read_all_csv import read_all_csv_in_directory, process_pea_data
 
 # ตั้งค่าฟอนต์เริ่มต้นให้กับกราฟ Plotly ทั้งหมด
 pio.templates.default = "plotly_white"
-pio.templates["plotly_white"].layout.font.family = "'Prompt', sans-serif"
+pio.templates["plotly_white"].layout.font.family = "'Kanit', sans-serif"
 
 # ตั้งค่าหน้าจอ Dashboard
-st.set_page_config(page_title="ระบบวิเคราะห์ผู้ใช้ไฟเพื่อแนะนำการติดตั้งโซลาร์เซลล์", page_icon="☀️", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Solar Analytics", page_icon="☀️", layout="wide", initial_sidebar_state="expanded")
 
 # --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
 st.markdown("""
 <style>
-/* นำเข้าฟอนต์ Prompt จาก Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+/* ซ่อนเมนู default */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
 
-/* บังคับใช้ฟอนต์ Prompt กับทุกส่วนของเว็บ */
+/* พื้นหลัง */
+.stApp {
+    background:
+    linear-gradient(
+    180deg,
+    #f1f5f9 0%,
+    #e2e8f0 100%
+    );
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700;800&display=swap');
+
+/* บังคับใช้ฟอนต์ Kanit กับทุกส่วนของเว็บ */
 html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, h6, button, input, select {
-    font-family: 'Prompt', sans-serif !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+/* SIDEBAR */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg,#081028,#11204d);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    width: 260px !important;
+}
+
+/* ลด padding */
+section[data-testid="stSidebar"] > div {
+    padding-top: 1rem;
+}
+
+/* ทำให้เมนูเนียน */
+.st-emotion-cache-16txtl3 {
+    padding-top: 1rem;
+}
+
+/* โลโก้ */
+.logo-text {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    padding-top: 10px;
+}
+
+/* แก้ไขสีตัวอักษรใน Sidebar ให้เป็นสีขาว (สำหรับ Header/Label ของตัวกรอง) */
+section[data-testid="stSidebar"] h1, 
+section[data-testid="stSidebar"] h2, 
+section[data-testid="stSidebar"] h3, 
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] p {
+    color: white !important;
+}
+/* ยกเว้นสีตัวอักษรข้างในกล่อง Select/Multiselect ให้เป็นสีดำตามเดิม */
+section[data-testid="stSidebar"] div[data-baseweb="select"] * {
+    color: #0f172a !important;
 }
 
 /* 📊 ตกแต่ง Metric Cards (กล่องตัวเลข) */
@@ -68,12 +122,6 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, 
     border-color: #e2e8f0;
 }
 
-/* ตกแต่ง Sidebar ให้ดูมีมิติ */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f8fafc, #eff6ff);
-    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-}
-
 /* ปุ่มทั่วไป (ปุ่มกด/ปุ่มลิงก์) */
 .stButton > button {
     border-radius: 8px;
@@ -86,81 +134,176 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* 🌙 รองรับ Dark Mode (สลับสีอัตโนมัติหากผู้ใช้เปิดธีมมืด) */
-@media (prefers-color-scheme: dark) {
-    [data-testid="stMetric"] {
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        border: 1px solid #334155;
-        border-left: 5px solid #38bdf8;
-    }
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #1e1e1e;
-        border-color: #333333;
-        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f172a, #1e293b);
-    }
-    
-    /* สีสำหรับแท็บเมนูในโหมดมืด */
-    div.stRadio > div[role="radiogroup"] > label {
-        background-color: #1e293b;
-        border-color: #334155;
-    }
-    div.stRadio > div[role="radiogroup"] > label:hover {
-        background-color: #0f172a;
-        border-color: #38bdf8;
-    }
+/* --- HERO SECTION --- */
+.hero {
+    background: linear-gradient(135deg,#081028,#1e3a8a);
+    min-height: 420px;
+    border-radius: 35px;
+    padding: 70px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    color: white;
+    margin-bottom: 30px;
 }
 
-/* 🌟 แปลง Radio Button ทั้งหมดให้กลายเป็นปุ่ม Tab (Top Navigation Bar) */
-div.stRadio > div[role="radiogroup"] {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding-bottom: 10px;
+/* แสงพื้นหลัง */
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: rgba(59,130,246,0.15);
+    border-radius: 50%;
+    top: -200px;
+    right: -100px;
+    filter: blur(40px);
 }
-div.stRadio > div[role="radiogroup"] > label {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+
+/* badge */
+.hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
     padding: 10px 20px;
-    border-radius: 30px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-radius: 50px;
+    color: #dbeafe;
+    font-size: 14px;
+    margin-bottom: 25px;
+    backdrop-filter: blur(10px);
+}
+
+/* title */
+.hero-title {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: white;
+}
+
+/* sub */
+.hero-sub {
+    margin-top: 25px;
+    font-size: 22px;
+    color: #dbeafe;
+    line-height: 1.8;
+    max-width: 850px;
+}
+
+/* button */
+.hero-button {
+    margin-top: 35px;
+    display: inline-block;
+    background: #2563eb;
+    padding: 16px 32px;
+    border-radius: 16px;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    transition: 0.3s;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
-div.stRadio > div[role="radiogroup"] > label:hover {
-    border-color: #0ea5e9;
-    transform: translateY(-2px);
+
+.hero-button:hover {
+    transform: translateY(-3px);
+    background: #3b82f6;
 }
-div.stRadio > div[role="radiogroup"] > label[data-checked="true"], 
-div.stRadio > div[role="radiogroup"] > label[aria-checked="true"] {
-    background-color: #0ea5e9;
-    border-color: #0ea5e9;
+
+/* --- CARD --- */
+.card {
+    background:rgba(255,255,255,0.8);
+    backdrop-filter:blur(10px);
+    padding:35px;
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px rgba(15,23,42,0.08);
+    transition:0.35s;
+    text-align: center;
 }
-div.stRadio > div[role="radiogroup"] > label[data-checked="true"] p,
-div.stRadio > div[role="radiogroup"] > label[aria-checked="true"] p {
-    color: #ffffff !important;
-    font-weight: 600;
+.card:hover {
+    transform:translateY(-8px);
+    box-shadow: 0 15px 40px rgba(15,23,42,0.15);
 }
-/* ซ่อนวงกลมจุดๆ ของ Radio */
-div.stRadio > div[role="radiogroup"] > label > div:first-child {
-    display: none;
+.card h3 {
+    color: #1e3a8a !important;
+    margin-bottom: 10px;
+}
+
+/* --- KPI CARD --- */
+.kpi-card {
+    background: white;
+    padding: 28px;
+    border-radius: 24px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.06);
+    transition: 0.3s;
+}
+.kpi-card:hover {
+    transform: translateY(-5px);
+}
+.kpi-title {
+    color: #64748b;
+    font-size: 16px;
+}
+.kpi-value {
+    margin-top: 10px;
+    font-size: 38px;
+    font-weight: 800;
+    color: #0f172a;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
-# --- เมนูนำทาง (Top Navigation) ---
-page = st.radio(
-    "🧭 เลือกหน้าต่างการใช้งาน:", 
-    ["🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)", "📊 แดชบอร์ดวิเคราะห์", "🎯 ค้นหาลูกค้าเป้าหมาย", "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)", "🏦 บริการด้านสินเชื่อ"],
-    horizontal=True,
-    label_visibility="collapsed"
-)
+# --- เมนูนำทาง (Sidebar Navigation) ---
+with st.sidebar:
+    st.markdown("""
+    <div class='logo-text'>
+        ☀️ SOLAR AI
+    </div>
+    <br>
+    """, unsafe_allow_html=True)
+
+    page_selection = option_menu(
+        menu_title="เมนูหลัก",
+        options=["หน้าแรก", "วิเคราะห์ผู้ใช้ไฟ", "ค้นหาเป้าหมาย", "คำนวณโซลาร์", "บริการสินเชื่อ"],
+        icons=["house", "bar-chart", "geo-alt", "calculator", "bank"],
+        menu_icon="list",
+        default_index=0,
+        styles={
+            "container": {
+                "padding": "5!important",
+                "background-color": "transparent"
+            },
+            "icon": {
+                "color": "white",
+                "font-size": "18px"
+            },
+            "nav-link": {
+                "font-size": "16px",
+                "text-align": "left",
+                "margin":"5px",
+                "padding":"12px",
+                "border-radius":"12px",
+                "--hover-color": "#334155",
+                "color":"white",
+            },
+            "nav-link-selected": {
+                "background-color": "#2563eb",
+            },
+        }
+    )
+
+# Map ชื่อเมนูใหม่กลับไปยังตัวแปรเดิมเพื่อให้โค้ดด้านล่างทำงานได้โดยไม่ต้องแก้ If Conditions
+page_map = {
+    "หน้าแรก": "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)",
+    "วิเคราะห์ผู้ใช้ไฟ": "📊 แดชบอร์ดวิเคราะห์",
+    "ค้นหาเป้าหมาย": "🎯 ค้นหาลูกค้าเป้าหมาย",
+    "คำนวณโซลาร์": "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)",
+    "บริการสินเชื่อ": "🏦 บริการด้านสินเชื่อ"
+}
+page = page_map[page_selection]
+
 st.divider()
 
 # ฟังก์ชันค้นหาไฟล์ภาพอัจฉริยะ (ค้นหาทุกโฟลเดอร์ ไม่สนตัวเล็ก/ใหญ่)
@@ -437,18 +580,101 @@ if df is not None:
     # ส่วนที่ 1: หน้าแรก (Home Page)
     # ==========================================
     if page == "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)":
-        st.title("☀️ บริการติดตั้งระบบโซล่าร์เซลล์ครบวงจร (Solar Cell)")
-        # รูปภาพหน้าปก (Banner) แผงโซล่าร์เซลล์จาก Unsplash
-        st.image("https://images.unsplash.com/photo-1509391366360-1e9e0344d21e?q=80&w=1200&auto=format&fit=crop", use_container_width=True)
-        st.markdown("---")
-        st.subheader("💡 ลงทุนวันนี้ เพื่อลดต้นทุนค่าไฟในระยะยาว")
+        
+        # ---------------- HERO BANNER ----------------
         st.markdown("""
-        **ทำไมถึงควรติดตั้งโซล่าร์เซลล์?**
-        - 💸 **ลดค่าไฟทันที:** ประหยัดค่าไฟฟ้าในเวลากลางวันได้สูงสุดถึง 60%
-        - ♻️ **พลังงานสะอาด:** ช่วยลดปริมาณคาร์บอนและส่งเสริมภาพลักษณ์ที่ดี (ESG) ให้กับธุรกิจของคุณ
-        - 📈 **คุ้มทุนไว:** ระยะเวลาคืนทุนเฉลี่ยเพียง 3-6 ปี (ขึ้นอยู่กับปริมาณการใช้ไฟฟ้า)
-        - 🛡️ **รับประกันยาวนาน:** แผงโซล่าร์เซลล์คุณภาพสูง รับประกันประสิทธิภาพนานถึง 25 ปี
-        """)
+        <div class="hero">
+        
+        <div class="hero-left">
+        
+        <div class="hero-badge">
+        ☀️ AI SOLAR ANALYTICS
+        </div>
+        
+        <div class="hero-title">
+        ระบบวิเคราะห์ผู้ใช้ไฟ
+        <br>
+        เพื่อแนะนำการติดตั้งโซลาร์เซลล์
+        </div>
+        
+        <div class="hero-sub">
+        วิเคราะห์พฤติกรรมการใช้ไฟฟ้าแบบอัจฉริยะ
+        แนะนำขนาดระบบที่เหมาะสม พร้อมคำนวณ ROI
+        และระยะเวลาคืนทุนอัตโนมัติ
+        </div>
+        
+        <div class="hero-button">
+        เริ่มวิเคราะห์ผู้ใช้ไฟ →
+        </div>
+        
+        </div>
+        
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        k1, k2, k3, k4 = st.columns(4)
+
+        with k1:
+            st.markdown("""
+            <div class='kpi-card'>
+            <div class='kpi-title'>ค่าไฟเฉลี่ย</div>
+            <div class='kpi-value'>฿ 48,200</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with k2:
+            st.markdown("""
+            <div class='kpi-card'>
+            <div class='kpi-title'>Solar Recommendation</div>
+            <div class='kpi-value'>15 kW</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with k3:
+            st.markdown("""
+            <div class='kpi-card'>
+            <div class='kpi-title'>คืนทุน</div>
+            <div class='kpi-value'>4.2 ปี</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with k4:
+            st.markdown("""
+            <div class='kpi-card'>
+            <div class='kpi-title'>ลด CO₂</div>
+            <div class='kpi-value'>12 Ton</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # ---------------- FEATURES ----------------
+        st.markdown("## 🔍 ฟีเจอร์ของระบบ")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("""
+            <div class="card">
+                <h3>📊 วิเคราะห์ค่าไฟ</h3>
+                <p>วิเคราะห์การใช้ไฟฟ้ารายเดือน</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("""
+            <div class="card">
+                <h3>☀️ คำนวณขนาดโซลาร์</h3>
+                <p>แนะนำขนาดระบบอัตโนมัติ</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown("""
+            <div class="card">
+                <h3>💰 วิเคราะห์ ROI</h3>
+                <p>คำนวณระยะเวลาคืนทุน</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        st.write("")
+        st.write("")
         st.divider()
         
         st.subheader("📦 แพ็กเกจการติดตั้งมาตรฐาน (ราคาโดยประมาณ)")
@@ -604,7 +830,16 @@ if df is not None:
                     show_details("แพ็กเกจ", ">15 kW", "500,000 - 550,000 บาทขึ้นไป", "- แผงโซล่าร์เซลล์ (550W) จำนวน 30 แผงขึ้นไป\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- ออกแบบระบบและประเมินโหลดตามการใช้งานจริง\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xxl, panel_models=panel_models_std)
             
         st.divider()
-        st.markdown("👆 **กรุณาเลือกเมนูที่แถบด้านบน** เพื่อวิเคราะห์ข้อมูลพฤติกรรมการใช้ไฟฟ้า และค้นหาลูกค้าเป้าหมายสำหรับเสนอโครงการ")
+        
+        # ---------------- FOOTER ----------------
+        st.markdown("""
+        <hr style="margin-top: 50px;">
+        <center>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                พัฒนาโดย Solar Analytics Platform ☀️
+            </p>
+        </center>
+        """, unsafe_allow_html=True)
         
         st.stop() # หยุดการทำงานสคริปต์ตรงนี้ เพื่อไม่ให้แสดงผลหน้าอื่นซ้อนกัน
 
