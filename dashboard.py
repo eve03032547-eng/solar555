@@ -9,6 +9,7 @@ import sys
 from streamlit_option_menu import option_menu
 import subprocess
 import os
+import base64
 
 # ตรวจสอบว่ารันผ่าน Streamlit หรือไม่ ถ้าไม่ใช่ (เช่น กดปุ่ม Run ปกติ) ให้รัน streamlit อัตโนมัติ
 if not st.runtime.exists():
@@ -33,13 +34,19 @@ st.markdown("""
 footer {visibility: hidden;}
 header {visibility: hidden;}
 
+/* ซ่อนปุ่มพับ/กาง Sidebar (ล็อกเมนูให้เปิดตลอดเวลา) */
+[data-testid="stSidebarCollapseButton"], 
+[data-testid="collapsedControl"] {
+    display: none !important;
+}
+
 /* พื้นหลัง */
 .stApp {
     background:
     linear-gradient(
     180deg,
-    #f1f5f9 0%,
-    #e2e8f0 100%
+    #ffffff 0%,
+    #f8fafc 100%
     );
 }
 
@@ -50,9 +57,15 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, 
     font-family: 'Kanit', sans-serif !important;
 }
 
-/* SIDEBAR */
+/* 🔥 Sidebar Glass Effect */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg,#081028,#11204d);
+    background:
+    linear-gradient(
+    180deg,
+    #020617 0%,
+    #0f172a 45%,
+    #172554 100%
+    );
     border-right: 1px solid rgba(255,255,255,0.08);
     width: 260px !important;
 }
@@ -62,18 +75,34 @@ section[data-testid="stSidebar"] > div {
     padding-top: 1rem;
 }
 
-/* ทำให้เมนูเนียน */
-.st-emotion-cache-16txtl3 {
-    padding-top: 1rem;
+/* กล่องเมนู */
+.st-emotion-cache-1v0mbdj,
+.st-emotion-cache-16txtl3{
+
+    background:#0f172a;
+
+    border:none;
+
+    border-radius:0px;
+
+    box-shadow:none;
 }
 
 /* โลโก้ */
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 10px;
+}
+.logo-img {
+    height: 35px;
+}
 .logo-text {
     font-size: 28px;
     font-weight: 800;
     color: white;
-    text-align: center;
-    padding-top: 10px;
 }
 
 /* แก้ไขสีตัวอักษรใน Sidebar ให้เป็นสีขาว (สำหรับ Header/Label ของตัวกรอง) */
@@ -251,60 +280,21 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
     font-weight: 800;
     color: #0f172a;
 }
+
+/* ซ่อนแถบด้านบน (Header) สีขาวของ Streamlit */
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# --- เมนูนำทาง (Sidebar Navigation) ---
-with st.sidebar:
-    st.markdown("""
-    <div class='logo-text'>
-        ☀️ SOLAR AI
-    </div>
-    <br>
-    """, unsafe_allow_html=True)
-
-    page_selection = option_menu(
-        menu_title="เมนูหลัก",
-        options=["หน้าแรก", "วิเคราะห์ผู้ใช้ไฟ", "ค้นหาเป้าหมาย", "คำนวณโซลาร์", "บริการสินเชื่อ"],
-        icons=["house", "bar-chart", "geo-alt", "calculator", "bank"],
-        menu_icon="list",
-        default_index=0,
-        styles={
-            "container": {
-                "padding": "5!important",
-                "background-color": "transparent"
-            },
-            "icon": {
-                "color": "white",
-                "font-size": "18px"
-            },
-            "nav-link": {
-                "font-size": "16px",
-                "text-align": "left",
-                "margin":"5px",
-                "padding":"12px",
-                "border-radius":"12px",
-                "--hover-color": "#334155",
-                "color":"white",
-            },
-            "nav-link-selected": {
-                "background-color": "#2563eb",
-            },
-        }
-    )
-
-# Map ชื่อเมนูใหม่กลับไปยังตัวแปรเดิมเพื่อให้โค้ดด้านล่างทำงานได้โดยไม่ต้องแก้ If Conditions
-page_map = {
-    "หน้าแรก": "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)",
-    "วิเคราะห์ผู้ใช้ไฟ": "📊 แดชบอร์ดวิเคราะห์",
-    "ค้นหาเป้าหมาย": "🎯 ค้นหาลูกค้าเป้าหมาย",
-    "คำนวณโซลาร์": "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)",
-    "บริการสินเชื่อ": "🏦 บริการด้านสินเชื่อ"
-}
-page = page_map[page_selection]
-
-st.divider()
+# --- Session State สำหรับจัดการระบบลิงก์ข้ามหน้า ---
+menu_options = ["หน้าแรก", "วิเคราะห์ผู้ใช้ไฟ", "ค้นหาเป้าหมาย", "คำนวณโซลาร์", "บริการสินเชื่อ"]
+if "active_page" not in st.session_state:
+    st.session_state.active_page = "หน้าแรก"
+if "menu_key" not in st.session_state:
+    st.session_state.menu_key = 0
 
 # ฟังก์ชันค้นหาไฟล์ภาพอัจฉริยะ (ค้นหาทุกโฟลเดอร์ ไม่สนตัวเล็ก/ใหญ่)
 def get_image_path(file_name, default_folder=""):
@@ -329,7 +319,6 @@ def get_image_path(file_name, default_folder=""):
     return "https://placehold.co/600x400.png?text=Image+Not+Found"
 
 # ฟังก์ชันแปลงรูปภาพในเครื่องเป็น Base64 เพื่อให้แทรกลง HTML ได้
-import base64
 def get_base64_image(file_name, folder_name="Logo"):
     image_path = get_image_path(file_name, folder_name)
     if str(image_path).startswith("http"):
@@ -341,6 +330,90 @@ def get_base64_image(file_name, folder_name="Logo"):
             mime = 'jpeg' if ext == 'jpg' else ext
             return f"data:image/{mime};base64,{b64}"
     return ""
+
+# --- เมนูนำทาง (Sidebar Navigation) ---
+with st.sidebar:
+    st.markdown(f"""
+    <div class='logo-container'>
+        <img src='{get_base64_image("Logo banner.png", "Banner")}' class='logo-img'>
+        <span class='logo-text'>SOLAR AI</span>
+    </div>
+    <br>
+    """, unsafe_allow_html=True)
+
+    current_index = menu_options.index(st.session_state.active_page)
+
+    page_selection = option_menu(
+        menu_title="เมนูหลัก",
+        options=menu_options,
+        icons=["house", "bar-chart", "geo-alt", "calculator", "bank"],
+        menu_icon="list",
+        default_index=current_index,
+        key=f"main_menu_{st.session_state.menu_key}",
+        styles={
+            "container": {
+                "padding": "0!important",
+                "background-color": "#0f172a",
+            },
+
+            "icon": {
+                "color": "white",
+                "font-size": "20px",
+            },
+
+            "menu-title": {
+                "color":"white",
+                "font-size":"22px",
+                "font-weight":"700",
+            },
+
+            "nav-link": {
+
+                "font-size": "18px",
+
+                "text-align": "left",
+
+                "margin":"6px 0",
+
+                "padding":"14px 18px",
+
+                "border-radius":"14px",
+
+                "background-color":"#0f172a",
+
+                "color":"white",
+
+                "--hover-color": "#1e293b",
+            },
+
+            "nav-link-selected": {
+
+                "background-color": "#2563eb",
+
+                "color":"white",
+
+                "font-weight":"700",
+            },
+        }
+    )
+
+    # ถ้ายูสเซอร์กดเปลี่ยนเมนูด้วยตัวเอง ให้ทำการอัปเดต State และรีเฟรชหน้า
+    if page_selection != st.session_state.active_page:
+        st.session_state.active_page = page_selection
+        st.session_state.menu_key += 1
+        st.rerun()
+
+# Map ชื่อเมนูใหม่กลับไปยังตัวแปรเดิมเพื่อให้โค้ดด้านล่างทำงานได้โดยไม่ต้องแก้ If Conditions
+page_map = {
+    "หน้าแรก": "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)",
+    "วิเคราะห์ผู้ใช้ไฟ": "📊 แดชบอร์ดวิเคราะห์",
+    "ค้นหาเป้าหมาย": "🎯 ค้นหาลูกค้าเป้าหมาย",
+    "คำนวณโซลาร์": "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)",
+    "บริการสินเชื่อ": "🏦 บริการด้านสินเชื่อ"
+}
+page = page_map[st.session_state.active_page]
+
+st.divider()
 
 # ==========================================
 # ส่วนที่ 5: หน้าบริการด้านสินเชื่อ
@@ -603,14 +676,15 @@ if df is not None:
         และระยะเวลาคืนทุนอัตโนมัติ
         </div>
         
-        <div class="hero-button">
-        เริ่มวิเคราะห์ผู้ใช้ไฟ →
-        </div>
-        
         </div>
         
         </div>
         """, unsafe_allow_html=True)
+
+        if st.button("เริ่มคำนวณโซลาร์ →", type="primary"):
+            st.session_state.active_page = "คำนวณโซลาร์"
+            st.session_state.menu_key += 1
+            st.rerun()
 
         st.write("")
 
