@@ -51,6 +51,20 @@ html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, 
     font-family: 'Kanit', sans-serif !important;
 }
 
+/* 🔥 ล็อก Sidebar ให้กางตลอดเวลา (เฉพาะจอคอม/แท็บเล็ต) */
+@media (min-width: 768px) {
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    section[data-testid="stSidebar"] {
+        min-width: 260px !important;
+        max-width: 260px !important;
+        transform: none !important;
+        visibility: visible !important;
+    }
+}
+
 /* 🔥 Sidebar Glass Effect */
 section[data-testid="stSidebar"] {
     background:
