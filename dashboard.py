@@ -32,7 +32,6 @@ st.markdown("""
 /* ซ่อนเมนู default */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: hidden;}
 
 
 /* พื้นหลัง */
