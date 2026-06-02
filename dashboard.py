@@ -91,18 +91,22 @@ section[data-testid="stSidebar"] > div {
 /* โลโก้ */
 .logo-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
     padding-top: 10px;
 }
 .logo-img {
-    height: 35px;
+    height: 130px;
+    max-width: 100%;
+    object-fit: contain;
 }
 .logo-text {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: white;
+    text-align: center;
 }
 
 /* แก้ไขสีตัวอักษรใน Sidebar ให้เป็นสีขาว (สำหรับ Header/Label ของตัวกรอง) */
@@ -285,6 +289,18 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
 [data-testid="stHeader"] {
     background: transparent !important;
 }
+
+/* ซ่อนไอคอนลูกศรทุกรูปแบบใน st.expander ทั้ง Default Browser และของ Streamlit */
+[data-testid="stExpander"] details summary {
+    list-style: none !important;
+}
+[data-testid="stExpander"] details summary::-webkit-details-marker {
+    display: none !important;
+}
+[data-testid="stExpander"] details summary svg,
+[data-testid="stExpander"] details summary [data-testid="stIconMaterial"] {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -335,8 +351,8 @@ def get_base64_image(file_name, folder_name="Logo"):
 with st.sidebar:
     st.markdown(f"""
     <div class='logo-container'>
-        <img src='{get_base64_image("Logo banner.png", "Banner")}' class='logo-img'>
-        <span class='logo-text'>SOLAR AI</span>
+        <img src='{get_base64_image("Logo bannertwo.png", "Banner")}' class='logo-img'>
+        <span class='logo-text'>SolarJoy Energy</span>
     </div>
     <br>
     """, unsafe_allow_html=True)
@@ -422,7 +438,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
     st.title("🏦 บริการด้านสินเชื่อสำหรับติดตั้งโซล่าร์เซลล์")
     st.markdown("*(ข้อมูลผลิตภัณฑ์สินเชื่อโครงการ PEA SOLAR จากสถาบันการเงินพันธมิตร เพื่อสนับสนุนการเข้าถึงพลังงานสะอาด)*")
     
-    st.image("https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop", use_container_width=True)
+    st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1200&h=400&auto=format&fit=crop", use_container_width=True)
     
     st.markdown("""
     การไฟฟ้าส่วนภูมิภาค (PEA) ได้ร่วมมือกับ **6 สถาบันการเงินชั้นนำของประเทศ** เพื่อให้บริการด้านสินเชื่อสำหรับการติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา (Solar Rooftop) 
@@ -687,43 +703,77 @@ if df is not None:
             st.rerun()
 
         st.write("")
-
-        k1, k2, k3, k4 = st.columns(4)
-
-        with k1:
+        
+        # ---------------- ABOUT US ----------------
+        st.markdown("## 🏢 รู้จักกับเรา (About Us)")
+        ab1, ab2 = st.columns([3, 2])
+        with ab1:
             st.markdown("""
-            <div class='kpi-card'>
-            <div class='kpi-title'>ค่าไฟเฉลี่ย</div>
-            <div class='kpi-value'>฿ 48,200</div>
+            <div style="background-color: #f8fafc; padding: 30px; border-radius: 16px; border-left: 6px solid #2563eb; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <p style="font-size: 18px; color: #334155; margin: 0; line-height: 1.6;">
+                    เราคือผู้ให้บริการออกแบบและติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์ (Solar Rooftop) แบบครบวงจร 
+                    ที่นำเทคโนโลยี <b>AI Analytics</b> มาใช้ในการประเมินพฤติกรรมการใช้ไฟฟ้าของคุณ เพื่อให้ได้ขนาดระบบที่เหมาะสมที่สุด 
+                    มุ่งเน้นความคุ้มค่าในการลงทุน ความปลอดภัย และการดูแลระยะยาว เพื่อช่วยให้คุณประหยัดค่าไฟและก้าวสู่การใช้พลังงานสะอาดอย่างยั่งยืน
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        with ab2:
+            st.image("https://images.unsplash.com/photo-1592833159155-c62df1b65634?q=80&w=800&h=480&auto=format&fit=crop", use_container_width=True)
+
+        # ---------------- WHY CHOOSE US ----------------
+        st.markdown("## ⭐ ทำไมต้องติดตั้งโซล่าร์เซลล์กับเรา?")
+        w1, w2, w3, w4 = st.columns(4)
+        with w1:
+            st.markdown("""
+            <div class="card" style="padding: 20px;">
+                <div style="font-size: 40px;">👷‍♂️</div>
+                <h4 style="color: #1e3a8a; margin-top: 10px;">วิศวกรเชี่ยวชาญ</h4>
+                <p style="font-size: 14px; color: #64748b;">ออกแบบและติดตั้งโดยทีมวิศวกรไฟฟ้าที่มีใบอนุญาต ถูกต้องตามมาตรฐาน</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with w2:
+            st.markdown("""
+            <div class="card" style="padding: 20px;">
+                <div style="font-size: 40px;">🛡️</div>
+                <h4 style="color: #1e3a8a; margin-top: 10px;">รับประกันยาวนาน</h4>
+                <p style="font-size: 14px; color: #64748b;">รับประกันแผง 25 ปี อินเวอร์เตอร์ 10 ปี และดูแลงานติดตั้งสูงสุด 2 ปี</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with w3:
+            st.markdown("""
+            <div class="card" style="padding: 20px;">
+                <div style="font-size: 40px;">🤖</div>
+                <h4 style="color: #1e3a8a; margin-top: 10px;">วิเคราะห์ด้วย AI</h4>
+                <p style="font-size: 14px; color: #64748b;">ระบบประเมินจุดคุ้มทุนและเสนอแพ็กเกจที่แม่นยำจากบิลค่าไฟจริงของคุณ</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with w4:
+            st.markdown("""
+            <div class="card" style="padding: 20px;">
+                <div style="font-size: 40px;">🏦</div>
+                <h4 style="color: #1e3a8a; margin-top: 10px;">รองรับสินเชื่อ</h4>
+                <p style="font-size: 14px; color: #64748b;">เป็นพันธมิตรกับธนาคารชั้นนำ ช่วยยื่นกู้และพร้อมเสนออัตราดอกเบี้ยพิเศษ</p>
             </div>
             """, unsafe_allow_html=True)
 
-        with k2:
-            st.markdown("""
-            <div class='kpi-card'>
-            <div class='kpi-title'>Solar Recommendation</div>
-            <div class='kpi-value'>15 kW</div>
-            </div>
-            """, unsafe_allow_html=True)
+        st.write("")
+        st.write("")
 
-        with k3:
-            st.markdown("""
-            <div class='kpi-card'>
-            <div class='kpi-title'>คืนทุน</div>
-            <div class='kpi-value'>4.2 ปี</div>
-            </div>
-            """, unsafe_allow_html=True)
+        # ---------------- SERVICES ----------------
+        st.markdown("## 🛠️ บริการที่คุณจะได้รับ (One-Stop Service)")
+        s1, s2 = st.columns(2)
+        with s1:
+            st.info("✅ **บริการสำรวจและออกแบบฟรี**\n\nลงพื้นที่สำรวจหน้างาน ประเมินโครงสร้างหลังคา และใช้โปรแกรมจำลองทิศทางรับแสงที่ดีที่สุด")
+            st.info("✅ **อุปกรณ์ระดับ Tier 1**\n\nเลือกใช้แผงโซล่าร์เซลล์และอินเวอร์เตอร์คุณภาพสูงระดับโลก ที่ได้รับการยอมรับด้านความปลอดภัย")
+        with s2:
+            st.info("✅ **ดำเนินการขออนุญาตฟรีทุกขั้นตอน**\n\nจัดการเอกสารกับ กฟภ./กฟน. และหน่วยงานราชการที่เกี่ยวข้องให้ทั้งหมดจนกว่าจะขนานไฟสำเร็จ")
+            st.info("✅ **บริการหลังการขายแบบมืออาชีพ**\n\nมีบริการล้างแผง ตรวจเช็คระบบไฟฟ้าประจำปี และตรวจสอบการทำงานผ่านแอปพลิเคชันออนไลน์ 24 ชม.")
 
-        with k4:
-            st.markdown("""
-            <div class='kpi-card'>
-            <div class='kpi-title'>ลด CO₂</div>
-            <div class='kpi-value'>12 Ton</div>
-            </div>
-            """, unsafe_allow_html=True)
+        st.write("")
+        st.divider()
 
         # ---------------- FEATURES ----------------
-        st.markdown("## 🔍 ฟีเจอร์ของระบบ")
+        st.markdown("## 🔍 ฟีเจอร์ของระบบซอฟต์แวร์วิเคราะห์")
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown("""
@@ -751,6 +801,7 @@ if df is not None:
         st.write("")
         st.divider()
         
+        st.image("https://images.unsplash.com/photo-1497440001374-f26997328c1b?q=80&w=1200&h=300&auto=format&fit=crop&v=new", use_container_width=True)
         st.subheader("📦 แพ็กเกจการติดตั้งมาตรฐาน (ราคาโดยประมาณ)")
         
         # ฟังก์ชันสำหรับเปิดหน้าต่าง Modal/Dialog แสดงรายละเอียดแพ็กเกจแบบกว้าง
@@ -772,7 +823,9 @@ if df is not None:
                         with st.container(border=True):
                             if 'image' in p_model:
                                 if str(p_model['image']).startswith("http") or os.path.exists(p_model['image']):
-                                    st.image(p_model['image'], use_container_width=True)
+                                    img_cols = st.columns([1, 5, 1]) # สร้างคอลัมน์ซ้อนเพื่อบีบขนาดรูป
+                                    with img_cols[1]:
+                                        st.image(p_model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {p_model['image']}")
                             st.markdown(f"""
@@ -795,7 +848,9 @@ if df is not None:
                         with st.container(border=True):
                             if 'image' in model:
                                 if str(model['image']).startswith("http") or os.path.exists(model['image']):
-                                    st.image(model['image'], use_container_width=True)
+                                    img_cols = st.columns([1, 5, 1]) # สร้างคอลัมน์ซ้อนเพื่อบีบขนาดรูป
+                                    with img_cols[1]:
+                                        st.image(model['image'], use_container_width=True)
                                 else:
                                     st.warning(f"⚠️ ไม่พบรูปภาพ: {model['image']}")
                             st.markdown(f"""
@@ -904,6 +959,34 @@ if df is not None:
                     show_details("แพ็กเกจ", ">15 kW", "500,000 - 550,000 บาทขึ้นไป", "- แผงโซล่าร์เซลล์ (550W) จำนวน 30 แผงขึ้นไป\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- ออกแบบระบบและประเมินโหลดตามการใช้งานจริง\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xxl, panel_models=panel_models_std)
             
         st.divider()
+        
+        # ---------------- NEWS & ARTICLES ----------------
+        st.markdown("## 📰 ข่าวสารและสาระน่ารู้เกี่ยวกับโซล่าร์เซลล์")
+        n1, n2, n3 = st.columns(3)
+        with n1:
+            with st.container(border=True):
+                st.image("https://images.unsplash.com/photo-1508514177221-188b1c77eca2?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
+                st.markdown("#### 🏭 กปภ. – กฟน. เปิดตัวโครงการ Solar Rooftop")
+                st.markdown("การประปาส่วนภูมิภาค (กปภ.) ร่วมกับ กฟน. เปิดโครงการติดตั้งและบำรุงรักษา Solar Rooftop เดินหน้าสู่การใช้พลังงานสะอาดยั่งยืนในองค์กร...")
+                st.write("")
+                st.link_button("อ่านเพิ่มเติม", "https://www.pwa.co.th/", use_container_width=True)
+        with n2:
+            with st.container(border=True):
+                st.image("https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
+                st.markdown("#### 📉 รัฐส่งเสริมโซล่าเซลล์ราคาประหยัด")
+                st.markdown("รัฐบาลเตรียมลดภาระค่าไฟฟ้าประชาชน ส่งเสริมใช้โซล่าเซลล์ราคาถูก พร้อมพัฒนาอินเวอร์เตอร์และปรับกฎหมายให้เข้าถึงพลังงานสะอาดได้ง่ายขึ้น...")
+                st.write("")
+                st.link_button("อ่านเพิ่มเติม", "https://www.thaigov.go.th/", use_container_width=True)
+        with n3:
+            with st.container(border=True):
+                st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
+                st.markdown("#### ⚡ ธนาคารเร่งออกสินเชื่อ Green Energy")
+                st.markdown("หลายธนาคารชั้นนำ เปิดตัวสินเชื่อติดตั้งโซลาร์เซลล์ทั้งในบ้านและธุรกิจ ด้วยเงื่อนไขยืดหยุ่นและอัตราดอกเบี้ยพิเศษเพื่อลดรายจ่ายระยะยาว...")
+                st.write("")
+                st.link_button("อ่านเพิ่มเติม", "https://www.scb.co.th/th/personal-banking/loans/home-loans/green-energy-loan.html", use_container_width=True)
+                
+        st.write("")
+        st.write("")
         
         # ---------------- FOOTER ----------------
         st.markdown("""
@@ -1449,7 +1532,8 @@ if df is not None:
             actual_kw = panels * 0.55
             avg_rate = avg_amt / avg_kwh if avg_kwh > 0 else 4.5
             
-            solar_produced = actual_kw * 120
+            # ใช้ประสิทธิภาพ 93.1% เสมือนถูกหักลบจากสภาพอากาศเริ่มต้น เพื่อให้ตรงกับรายละเอียดด้านใน
+            solar_produced = actual_kw * (120 * 0.931)
             kwh_saved = min(solar_produced, avg_kwh)
             monthly_savings = min(kwh_saved * avg_rate, avg_amt)
             investment = actual_kw * 35000
@@ -1899,6 +1983,23 @@ if df is not None:
         # เรียงตามลำดับค่าไฟจากมากไปน้อย (รายใหญ่ขึ้นก่อน)
         display_df = display_df.sort_values(by='ค่าไฟเดิม (บาท/เดือน)', ascending=False).reset_index(drop=True)
         
+        # --- สรุปภาพรวมลูกค้าที่ควรติดโซล่าร์เซลล์ ---
+        total_cust = len(display_df)
+        recommended_cust = len(display_df[display_df['คำแนะนำ'] == '✅ ควรติด'])
+        pct_recommended = (recommended_cust / total_cust * 100) if total_cust > 0 else 0
+        
+        st.markdown("##### 📊 สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
+        mcol1, mcol2, mcol3 = st.columns(3)
+        with mcol1:
+            with st.container(border=True):
+                st.metric("👥 ลูกค้าที่ประเมินทั้งหมด", f"{total_cust:,} ราย")
+        with mcol2:
+            with st.container(border=True):
+                st.metric("✅ ลูกค้าที่ควรติดตั้ง", f"{recommended_cust:,} ราย")
+        with mcol3:
+            with st.container(border=True):
+                st.metric("📈 คิดเป็นสัดส่วนเป้าหมาย", f"{pct_recommended:,.1f}%")
+
         # --- ตัวกรองข้อมูลสำหรับตาราง ---
         st.markdown("**🔎 ตัวกรองข้อมูลตาราง:**")
         
