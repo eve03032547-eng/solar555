@@ -34,11 +34,6 @@ st.markdown("""
 footer {visibility: hidden;}
 header {visibility: hidden;}
 
-/* ซ่อนปุ่มพับ/กาง Sidebar (ล็อกเมนูให้เปิดตลอดเวลา) */
-[data-testid="stSidebarCollapseButton"], 
-[data-testid="collapsedControl"] {
-    display: none !important;
-}
 
 /* พื้นหลัง */
 .stApp {
