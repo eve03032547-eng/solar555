@@ -577,10 +577,24 @@ if page == "🏦 บริการด้านสินเชื่อ":
 # ส่วนที่ 4: หน้าคำนวณโซล่าร์เซลล์จากเครื่องใช้ไฟฟ้า (แยกออกมาให้ทำงานอิสระได้)
 # ==========================================
 if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)":
-    st.title("🧮 คำนวณขนาดโซล่าร์เซลล์ที่เหมาะสมจากเครื่องใช้ไฟฟ้า")
-    st.markdown("*(คำนวณขนาดแผงโซล่าร์เซลล์ On-Grid จากจำนวนและชั่วโมงการเปิดใช้งานเครื่องใช้ไฟฟ้าในช่วงเวลากลางวัน)*")
+    st.title("🧮 คำนวณขนาดโซล่าร์เซลล์ที่เหมาะสม")
+    st.markdown("*(ประเมินขนาดแผงโซล่าร์เซลล์ On-Grid เพื่อช่วยลดค่าไฟในช่วงเวลากลางวันอย่างคุ้มค่า)*")
     
-    st.info("💡 **คำแนะนำ:** ให้กรอกเฉพาะชั่วโมงการใช้งานในช่วงที่ **มีแสงแดด (ประมาณ 08:00 - 17:00 น.)** เท่านั้น เนื่องจากระบบไม่มีแบตเตอรี่สำรองไฟ")
+    st.markdown("### 📄 วิธีที่ 1: ประเมินแบบด่วนจากบิลค่าไฟ")
+    st.info("💡 นำตัวเลข **'หน่วยการใช้ไฟฟ้ารวม (kWh)'** จากบิลค่าไฟเดือนล่าสุดของคุณมากรอก (หากระบุค่าในช่องนี้ ระบบจะใช้ค่านี้คำนวณเป็นหลักทันที)")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        manual_monthly_kwh = st.number_input("⚡ ระบุหน่วยการใช้ไฟรวมต่อเดือน (kWh)", min_value=0.0, value=0.0, step=100.0)
+    with c2:
+        usage_type = st.selectbox("ประเภทสถานที่ (เพื่อกะสัดส่วนการใช้ไฟกลางวัน):", ["🏠 บ้านพักอาศัย (ใช้ไฟกลางวัน ~50%)", "🏢 กิจการ/ออฟฟิศ (ใช้ไฟกลางวัน ~70%)"])
+        
+    day_ratio = 0.5 if "บ้าน" in usage_type else 0.7
+    total_daily_kwh_manual = (manual_monthly_kwh / 30.0) * day_ratio if manual_monthly_kwh > 0 else 0.0
+    
+    st.markdown("---")
+    st.markdown("### 🔌 วิธีที่ 2: ประเมินแบบละเอียดจากเครื่องใช้ไฟฟ้า")
+    st.info("💡 **คำแนะนำ:** กรุณากรอกเฉพาะชั่วโมงการใช้งานในช่วงที่ **มีแสงแดด (ประมาณ 08:00 - 17:00 น.)** เท่านั้น เนื่องจากระบบไม่มีแบตเตอรี่สำรองไฟ")
     
     # รายการเครื่องใช้ไฟฟ้าเริ่มต้น
     initial_appliances = [
@@ -668,7 +682,10 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
                 st.session_state.calc_appliances.pop()
                 st.rerun()
                 
-    total_daily_kwh = total_daily_wh / 1000
+    total_daily_kwh_table = total_daily_wh / 1000
+    
+    # เลือกใช้ค่าจากการกรอกบิลไฟเป็นหลัก หากไม่กรอกถึงจะใช้ค่าจากตารางเครื่องใช้ไฟฟ้า
+    total_daily_kwh = total_daily_kwh_manual if manual_monthly_kwh > 0 else total_daily_kwh_table
     
     st.divider()
     st.subheader("📊 ผลการประเมินและขนาดที่แนะนำ")
@@ -845,7 +862,8 @@ if df is not None:
             # --- ส่วนแสดงรูปภาพแผงโซล่าร์เซลล์ ---
             if panel_models:
                 st.divider()
-                st.markdown("### ☀️ เลือกรุ่นแผงโซล่าร์เซลล์ Tier 1 (รวมในแพ็กเกจ):")
+                st.markdown("### ☀️ เลือกรุ่นแผงโซล่าร์เซลล์ Tier 1:")
+                st.info("💡 **เกร็ดความรู้เรื่องราคา:** แผงโซล่าร์เซลล์ระดับ Tier 1 (เช่น Jinko, LONGi) จะมีต้นทุนมาตรฐานใกล้เคียงกัน บริษัทส่วนใหญ่จึงเปิดให้ลูกค้า **สามารถเลือกแบรนด์แผงโซล่าร์เซลล์ได้อิสระ โดยไม่ทำให้ราคาแพ็กเกจเปลี่ยนแปลง** (ราคาแพ็กเกจแบบครบชุด จะถูกกำหนดความถูก-แพง จาก 'แบรนด์อินเวอร์เตอร์' ที่ลูกค้าเลือกด้านล่างครับ)")
                 p_cols = st.columns(len(panel_models))
                 for i, p_model in enumerate(panel_models):
                     with p_cols[i]:
@@ -862,15 +880,16 @@ if df is not None:
                                 <div style="font-size: 40px; margin-bottom: 5px;">🔆</div>
                                 <div style="font-size: 16px; font-weight: bold; color: #4C1D95;">{p_model['name']}</div>
                                 <div style="color: #6B7280; font-size: 12px; margin-top: 5px;">แผงคุณภาพสูง (Tier 1)</div>
+                                <div style="font-size: 14px; color: #7C3AED; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #F3E8FF; border-radius: 8px;">รวมอยู่ในราคาแพ็กเกจแล้ว</div>
                             </div>
                             """, unsafe_allow_html=True)
                             if st.button(f"เลือกแผง {p_model['name']}", key=f"select_panel_{pkg_name}_{i}", use_container_width=True):
-                                st.success(f"✅ สนใจแผงโซล่าร์เซลล์รุ่น {p_model['name']}")
+                                st.success(f"✅ คุณสนใจแผงโซล่าร์เซลล์รุ่น {p_model['name']} (รวมอยู่ในราคาแพ็กเกจด้านล่างแล้ว ไม่มีบวกเพิ่ม)")
 
             # --- ส่วนแสดงรูปภาพอินเวอร์เตอร์ / มิตเตอร์แต่ละรุ่น ---
             if models:
                 st.divider()
-                st.markdown("### 🔌 เลือกรุ่นอินเวอร์เตอร์ / สมาร์ทมิเตอร์ (ราคาตามแพ็กเกจ):")
+                st.markdown("### 🔌 เลือกแบรนด์อินเวอร์เตอร์ (ราคานี้รวมแผงโซลาร์เซลล์ อินเวอร์เตอร์ สมาร์ทมิเตอร์ และอุปกรณ์ติดตั้งครบชุดแล้ว):")
                 cols = st.columns(len(models))
                 for i, model in enumerate(models):
                     with cols[i]:
@@ -885,12 +904,12 @@ if df is not None:
                             st.markdown(f"""
                             <div style="background-color: #F8FAFC; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 2px dashed #93C5FD;">
                                 <div style="font-size: 40px; margin-bottom: 5px;">⚡</div>
-                                <div style="font-size: 16px; font-weight: bold; color: #0369A1;">{model['name']}</div>
-                                <div style="font-size: 14px; color: #0284C7; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #E0F2FE; border-radius: 8px;">🏷️ {model['price']}</div>
+                                <div style="font-size: 16px; font-weight: bold; color: #0369A1;">เซ็ตอุปกรณ์ {model['name']}</div>
+                                <div style="font-size: 14px; color: #0284C7; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #E0F2FE; border-radius: 8px;">ราคารวมทั้งแพ็กเกจ: {model['price']}</div>
                             </div>
                             """, unsafe_allow_html=True)
-                            if st.button(f"เลือก {model['name']}", key=f"select_{pkg_name}_{i}", use_container_width=True):
-                                st.success(f"✅ คุณเลือกสนใจ {model['name']} ราคา {model['price']}")
+                            if st.button(f"สนใจแพ็กเกจ {model['name']}", key=f"select_{pkg_name}_{i}", use_container_width=True):
+                                st.success(f"✅ คุณสนใจแพ็กเกจแบบครบชุด เซ็ต {model['name']} ในราคารวม {model['price']}")
 
             st.divider()
             st.info("💡 หมายเหตุ: ราคาอาจมีการเปลี่ยนแปลงขึ้นอยู่กับการประเมินหน้างาน โครงสร้างหลังคา และรุ่นอุปกรณ์ที่เลือก")
@@ -911,7 +930,7 @@ if df is not None:
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">3 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏠 เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\n💵 ราคา: **145,000 บาท**\n\n*(เฉลี่ย ~48,333 ฿/kW)*")
+                st.markdown("🏠 เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\n💵 ราคารวมติดตั้งเริ่มต้น: **135,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_s", use_container_width=True):
                     models_s = [
                         {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": get_image_path("SUN2000-3KTL-L1..webp", "package3kW")},
@@ -927,7 +946,7 @@ if df is not None:
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">5 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏡 เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\n💵 ราคา: **200,000 บาท**\n\n*(เฉลี่ย ~40,000 ฿/kW)*")
+                st.markdown("🏡 เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\n💵 ราคารวมติดตั้งเริ่มต้น: **189,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_m", use_container_width=True):
                     models_m = [
                         {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": get_image_path("SUN2000-5KTL-L1-01.webp", "package3kW")},
@@ -943,7 +962,7 @@ if df is not None:
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">10 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏢 เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\n💵 ราคา: **329,000 บาท**\n\n*(เฉลี่ย ~32,900 ฿/kW)*")
+                st.markdown("🏢 เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\n💵 ราคารวมติดตั้งเริ่มต้น: **315,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_l", use_container_width=True):
                     models_l = [
                         {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": get_image_path("SUN2000-10KTL-M1-01.webp", "package3kW")},
@@ -962,7 +981,7 @@ if df is not None:
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">15 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏭 เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\n💵 ราคา: **454,900 บาท**\n\n*(เฉลี่ย ~30,326 ฿/kW)*")
+                st.markdown("🏭 เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\n💵 ราคารวมติดตั้งเริ่มต้น: **439,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_xl", use_container_width=True):
                     models_xl = [
                         {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": get_image_path("Huawei-SUN2000-15KTL-M2.jpg", "package3kW")},
@@ -978,7 +997,7 @@ if df is not None:
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">>15 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏭 เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\n💵 ราคา: **550,000 บาทขึ้นไป**\n\n*(เฉลี่ย ~27,500 ฿/kW)*")
+                st.markdown("🏭 เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\n💵 ราคารวมติดตั้งเริ่มต้น: **500,000 บาทขึ้นไป**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("🔍 ดูรายละเอียด", key="btn_xxl", use_container_width=True):
                     models_xxl = [
                         {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": get_image_path("SUN2000-30KTL-M3.2.webp", "package3kW")},
@@ -2310,4 +2329,4 @@ if df is not None:
 
 else:
     import os
-    st.warning(f"ไม่พบข้อมูล กรุณาตรวจสอบว่ามีไฟล์ CSV หรือ ZIP ในโฟลเดอร์เดียวกับสคริปต์หรือไม่\n\n(กำลังค้นหาที่โฟลเดอร์: `{os.path.abspath('.')}`)")
+    st.warning(f"ไม่พบข้อมูล กรุณาตรวจสอบว่ามีไฟล์ CSV หรือ ZIP ในโฟลเดอร์เดียวกับสคริปต์หรือไม่\n\n(กำลังค้นหาที่โฟลเดอร์: `{os.path.abspath('.')}`)")  
