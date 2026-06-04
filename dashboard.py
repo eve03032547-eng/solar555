@@ -10,6 +10,7 @@ from streamlit_option_menu import option_menu
 import subprocess
 import os
 import base64
+import io
 
 # ตรวจสอบว่ารันผ่าน Streamlit หรือไม่ ถ้าไม่ใช่ (เช่น กดปุ่ม Run ปกติ) ให้รัน streamlit อัตโนมัติ
 if not st.runtime.exists():
@@ -21,7 +22,7 @@ from read_all_csv import read_all_csv_in_directory, process_pea_data
 
 # ตั้งค่าฟอนต์เริ่มต้นให้กับกราฟ Plotly ทั้งหมด
 pio.templates.default = "plotly_white"
-pio.templates["plotly_white"].layout.font.family = "'Kanit', sans-serif"
+pio.templates["plotly_white"].layout.font.family = "'Noto Sans Thai', 'Kanit', 'Leelawadee UI', sans-serif"
 
 # ตั้งค่าหน้าจอ Dashboard
 st.set_page_config(page_title="Solar Analytics", page_icon="☀️", layout="wide", initial_sidebar_state="expanded")
@@ -29,6 +30,9 @@ st.set_page_config(page_title="Solar Analytics", page_icon="☀️", layout="wid
 # --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
 st.markdown("""
 <style>
+/* 🌟 โหลดฟอนต์ Noto Sans Thai มาจาก Google Fonts (ต้องอยู่บนสุดเสมอ) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
 /* ซ่อนเมนู default */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
@@ -44,11 +48,9 @@ footer {visibility: hidden;}
     );
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700;800&display=swap');
-
-/* บังคับใช้ฟอนต์ Kanit กับทุกส่วนของเว็บ */
-html, body, [class*="css"], [class*="st-"], .stMarkdown, p, h1, h2, h3, h4, h5, h6, button, input, select {
-    font-family: 'Kanit', sans-serif !important;
+/* บังคับใช้ฟอนต์ Noto Sans Thai กับทุกส่วนของเว็บ */
+html, body, div, span, p, h1, h2, h3, h4, h5, h6, button, input, select, textarea, label, [class*="st-"], [class*="css-"] {
+    font-family: 'Noto Sans Thai', 'Kanit', 'Prompt', 'Leelawadee UI', 'Sukhumvit Set', sans-serif !important;
 }
 
 /* 🔥 ล็อก Sidebar ให้กางตลอดเวลา (เฉพาะจอคอม/แท็บเล็ต) */
@@ -389,6 +391,7 @@ with st.sidebar:
                 "color":"white",
                 "font-size":"22px",
                 "font-weight":"700",
+                "font-family": "system-ui, -apple-system, 'Leelawadee UI', 'Sukhumvit Set', sans-serif",
             },
 
             "nav-link": {
@@ -396,6 +399,7 @@ with st.sidebar:
                 "font-size": "18px",
 
                 "text-align": "left",
+                "font-family": "system-ui, -apple-system, 'Leelawadee UI', 'Sukhumvit Set', sans-serif",
 
                 "margin":"6px 0",
 
@@ -446,7 +450,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
     st.title("🏦 บริการด้านสินเชื่อสำหรับติดตั้งโซล่าร์เซลล์")
     st.markdown("*(ข้อมูลผลิตภัณฑ์สินเชื่อโครงการ PEA SOLAR จากสถาบันการเงินพันธมิตร เพื่อสนับสนุนการเข้าถึงพลังงานสะอาด)*")
     
-    st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1200&h=400&auto=format&fit=crop", use_container_width=True)
+    st.image("https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop", use_container_width=True)
     
     st.markdown("""
     การไฟฟ้าส่วนภูมิภาค (PEA) ได้ร่วมมือกับ **6 สถาบันการเงินชั้นนำของประเทศ** เพื่อให้บริการด้านสินเชื่อสำหรับการติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา (Solar Rooftop) 
@@ -578,7 +582,8 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
     
     st.info("💡 **คำแนะนำ:** ให้กรอกเฉพาะชั่วโมงการใช้งานในช่วงที่ **มีแสงแดด (ประมาณ 08:00 - 17:00 น.)** เท่านั้น เนื่องจากระบบไม่มีแบตเตอรี่สำรองไฟ")
     
-    appliances = [
+    # รายการเครื่องใช้ไฟฟ้าเริ่มต้น
+    initial_appliances = [
         {"name": "❄️ แอร์ 9,000 BTU", "watts": 800, "qty": 0, "hrs": 0.0},
         {"name": "❄️ แอร์ 12,000 BTU", "watts": 1000, "qty": 0, "hrs": 0.0},
         {"name": "❄️ แอร์ 18,000 BTU", "watts": 1500, "qty": 0, "hrs": 0.0},
@@ -589,8 +594,25 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
         {"name": "🌀 พัดลม", "watts": 50, "qty": 0, "hrs": 0.0},
         {"name": "👕 เครื่องซักผ้า", "watts": 400, "qty": 0, "hrs": 0.0},
         {"name": "💧 ปั๊มน้ำ", "watts": 300, "qty": 0, "hrs": 0.0},
-        {"name": "🔌 อื่นๆ (ระบุกำลังไฟรวม)", "watts": 100, "qty": 0, "hrs": 0.0},
+        {"name": "🔌 อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0},
     ]
+    if "calc_appliances" not in st.session_state:
+        st.session_state.calc_appliances = initial_appliances
+    
+    other_appliances_options = {
+        "🔌 อื่นๆ (ระบุกำลังไฟเอง)": 100,
+        "♨️ ไมโครเวฟ": 800,
+        "☕ กาต้มน้ำร้อน": 1500,
+        "🍚 หม้อหุงข้าว": 600,
+        "🍳 เตาแม่เหล็กไฟฟ้า": 1500,
+        "🔥 เครื่องทำน้ำอุ่น": 3500,
+        "🌬️ ไดร์เป่าผม": 1200,
+        "👔 เตารีด": 1000,
+        "🧹 เครื่องดูดฝุ่น": 1200,
+        "💨 เครื่องฟอกอากาศ": 400,
+        "🍞 เตาอบไฟฟ้า": 2000,
+        "💨 ปั๊มลม": 1500
+    }
     
     total_daily_wh = 0
     
@@ -603,21 +625,49 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
     st.markdown("<hr style='margin-top: 0; margin-bottom: 10px;'>", unsafe_allow_html=True)
     
     # แถวรับข้อมูล
-    for i, app in enumerate(appliances):
+    for i, app in enumerate(st.session_state.calc_appliances):
         row = st.columns([3, 2, 2, 2])
-        row[0].markdown(f"<div style='padding-top: 10px;'>{app['name']}</div>", unsafe_allow_html=True)
-        # รับค่า input หากเป็น "อื่นๆ" ให้แก้ค่า W ได้
+        
         if "อื่นๆ" in app['name']:
-            custom_w = row[1].number_input(f"w_{i}", min_value=0, max_value=10000, value=app['watts'], step=100, label_visibility="collapsed")
-            app['watts'] = custom_w
+            selected_other = row[0].selectbox(f"app_select_{i}", options=list(other_appliances_options.keys()), label_visibility="collapsed")
+            if selected_other == "🔌 อื่นๆ (ระบุกำลังไฟเอง)":
+                custom_w = row[1].number_input(f"w_{i}", min_value=0, max_value=10000, value=int(app.get('watts', 100)), step=100, label_visibility="collapsed")
+                app['watts'] = custom_w
+            else:
+                row[1].markdown(f"<div style='padding-top: 10px; color: #6b7280;'>~ {other_appliances_options[selected_other]} W</div>", unsafe_allow_html=True)
+                app['watts'] = other_appliances_options[selected_other]
         else:
+            row[0].markdown(f"<div style='padding-top: 10px;'>{app['name']}</div>", unsafe_allow_html=True)
             row[1].markdown(f"<div style='padding-top: 10px; color: #6b7280;'>~ {app['watts']} W</div>", unsafe_allow_html=True)
             
-        qty = row[2].number_input(f"qty_{i}", min_value=0, max_value=100, value=app['qty'], label_visibility="collapsed")
-        hrs = row[3].number_input(f"hrs_{i}", min_value=0.0, max_value=12.0, value=app['hrs'], step=0.5, label_visibility="collapsed")
+        qty = row[2].number_input(f"qty_{i}", min_value=0, max_value=100, value=int(app.get('qty', 0)), label_visibility="collapsed")
+        hrs = row[3].number_input(f"hrs_{i}", min_value=0.0, max_value=12.0, value=float(app.get('hrs', 0.0)), step=0.5, label_visibility="collapsed")
+        
+        app['qty'] = qty
+        app['hrs'] = hrs
         
         total_daily_wh += (app['watts'] * qty * hrs)
         
+    # --- ปุ่มเพิ่ม/ลบ เครื่องใช้ไฟฟ้า ---
+    st.markdown("<br>", unsafe_allow_html=True) # เพิ่มช่องว่างด้านบนปุ่ม
+    add_col1, add_col2, add_col3 = st.columns([2, 2, 2])
+    with add_col1: # ปุ่มเพิ่ม
+        if st.button("➕ เพิ่มรายการ 'อื่นๆ'", use_container_width=True):
+            st.session_state.calc_appliances.append({"name": "🔌 อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0})
+            st.rerun()
+    with add_col2: # ปุ่มล้างข้อมูลทั้งหมด
+        if st.button("🔄 ล้างข้อมูลทั้งหมด", use_container_width=True, help="รีเซ็ตจำนวนและชั่วโมงการใช้งานทั้งหมดเป็น 0 รวมถึงลบแถว 'อื่นๆ' ที่เพิ่มมา"):
+            # สร้างรายการเริ่มต้นใหม่ โดยตั้งค่า qty เป็น 0 (จำนวนเต็ม) และ hrs เป็น 0.0 (ทศนิยม)
+            st.session_state.calc_appliances = [
+                {**app, 'qty': 0, 'hrs': 0.0} for app in initial_appliances
+            ]
+            st.rerun()
+    with add_col3: # ปุ่มลบรายการล่าสุด
+        if len(st.session_state.calc_appliances) > 11:
+            if st.button("➖ ลบรายการล่าสุด", use_container_width=True):
+                st.session_state.calc_appliances.pop()
+                st.rerun()
+                
     total_daily_kwh = total_daily_wh / 1000
     
     st.divider()
@@ -632,7 +682,7 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
             elif kw <= 5: return "5 kW", 200000
             elif kw <= 10: return "10 kW", 329000
             elif kw <= 15: return "15 kW", 454900
-            else: return ">15 kW", 550000
+            else: return ">15 kW", max(550000, kw * 27500)
         
         pkg_name, pkg_price = rec_pkg(recommended_kw)
         
@@ -777,35 +827,6 @@ if df is not None:
             st.info("✅ **ดำเนินการขออนุญาตฟรีทุกขั้นตอน**\n\nจัดการเอกสารกับ กฟภ./กฟน. และหน่วยงานราชการที่เกี่ยวข้องให้ทั้งหมดจนกว่าจะขนานไฟสำเร็จ")
             st.info("✅ **บริการหลังการขายแบบมืออาชีพ**\n\nมีบริการล้างแผง ตรวจเช็คระบบไฟฟ้าประจำปี และตรวจสอบการทำงานผ่านแอปพลิเคชันออนไลน์ 24 ชม.")
 
-        st.write("")
-        st.divider()
-
-        # ---------------- FEATURES ----------------
-        st.markdown("## 🔍 ฟีเจอร์ของระบบซอฟต์แวร์วิเคราะห์")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("""
-            <div class="card">
-                <h3>📊 วิเคราะห์ค่าไฟ</h3>
-                <p>วิเคราะห์การใช้ไฟฟ้ารายเดือน</p>
-            </div>
-            """, unsafe_allow_html=True)
-        with col2:
-            st.markdown("""
-            <div class="card">
-                <h3>☀️ คำนวณขนาดโซลาร์</h3>
-                <p>แนะนำขนาดระบบอัตโนมัติ</p>
-            </div>
-            """, unsafe_allow_html=True)
-        with col3:
-            st.markdown("""
-            <div class="card">
-                <h3>💰 วิเคราะห์ ROI</h3>
-                <p>คำนวณระยะเวลาคืนทุน</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        st.write("")
         st.write("")
         st.divider()
         
@@ -973,21 +994,21 @@ if df is not None:
         n1, n2, n3 = st.columns(3)
         with n1:
             with st.container(border=True):
-                st.image("https://images.unsplash.com/photo-1508514177221-188b1c77eca2?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
-                st.markdown("#### 🏭 กปภ. – กฟน. เปิดตัวโครงการ Solar Rooftop")
-                st.markdown("การประปาส่วนภูมิภาค (กปภ.) ร่วมกับ กฟน. เปิดโครงการติดตั้งและบำรุงรักษา Solar Rooftop เดินหน้าสู่การใช้พลังงานสะอาดยั่งยืนในองค์กร...")
+                st.markdown('<a href="https://peasolar.pea.co.th/" target="_blank"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
+                st.markdown("#### 🌞 กฟภ. หนุนประชาชนติดตั้ง Solar Rooftop")
+                st.markdown("การไฟฟ้าส่วนภูมิภาค (PEA) ส่งเสริมให้ประชาชนและภาคธุรกิจติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา เพื่อลดภาระค่าใช้จ่ายระยะยาว...")
                 st.write("")
-                st.link_button("อ่านเพิ่มเติม", "https://www.pwa.co.th/", use_container_width=True)
+                st.link_button("อ่านเพิ่มเติม", "https://peasolar.pea.co.th/", use_container_width=True)
         with n2:
             with st.container(border=True):
-                st.image("https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
+                st.markdown('<a href="https://www.thaigov.go.th/" target="_blank"><img src="https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
                 st.markdown("#### 📉 รัฐส่งเสริมโซล่าเซลล์ราคาประหยัด")
                 st.markdown("รัฐบาลเตรียมลดภาระค่าไฟฟ้าประชาชน ส่งเสริมใช้โซล่าเซลล์ราคาถูก พร้อมพัฒนาอินเวอร์เตอร์และปรับกฎหมายให้เข้าถึงพลังงานสะอาดได้ง่ายขึ้น...")
                 st.write("")
                 st.link_button("อ่านเพิ่มเติม", "https://www.thaigov.go.th/", use_container_width=True)
         with n3:
             with st.container(border=True):
-                st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=600&h=350&auto=format&fit=crop", use_container_width=True)
+                st.markdown('<a href="https://www.scb.co.th/th/personal-banking/loans/home-loans/green-energy-loan.html" target="_blank"><img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
                 st.markdown("#### ⚡ ธนาคารเร่งออกสินเชื่อ Green Energy")
                 st.markdown("หลายธนาคารชั้นนำ เปิดตัวสินเชื่อติดตั้งโซลาร์เซลล์ทั้งในบ้านและธุรกิจ ด้วยเงื่อนไขยืดหยุ่นและอัตราดอกเบี้ยพิเศษเพื่อลดรายจ่ายระยะยาว...")
                 st.write("")
@@ -1341,12 +1362,12 @@ if df is not None:
     # ==========================================
     # ส่วนที่ 3: หน้าค้นหาและวิเคราะห์ลูกค้าเป้าหมาย
     # ==========================================
-    if page == "🎯 ค้นหาลูกค้าเป้าหมาย":
-        st.title("🎯 ค้นหาและวิเคราะห์กลุ่มลูกค้าเป้าหมาย")
+    if page == "ค้นหาลูกค้าเป้าหมาย":
+        st.title("ค้นหาและวิเคราะห์กลุ่มลูกค้าเป้าหมาย")
         st.markdown("*(เจาะลึกพฤติกรรมรายบุคคล ดูตำแหน่งแผนที่ และตารางประเมินความคุ้มค่าแบบ Real-Time)*")
         
         # --- แผนที่ตำแหน่งลูกค้า ---
-        st.subheader("🗺️ แผนที่แสดงเป้าหมายลูกค้าที่ควรติดโซล่าร์เซลล์")
+        st.subheader("แผนที่แสดงเป้าหมายลูกค้าที่ควรติดโซล่าร์เซลล์")
         st.markdown("*(แสดงจุดพิกัดของลูกค้าเพื่อประเมินศักยภาพในการเสนอโปรเจกต์)*")
 
     # ดึงคอลัมน์พิกัด G และ H ที่ถูกกำหนดชื่อมาจาก read_all_csv.py
@@ -1412,7 +1433,7 @@ if df is not None:
                 # อิงราคาเงินลงทุนตามขนาดแพ็กเกจจริง
                 inv_conds = [actual_kw <= 3, actual_kw <= 5, actual_kw <= 10, actual_kw <= 15]
                 inv_vals = [145000, 200000, 329000, 454900]
-                investment_map = np.select(inv_conds, inv_vals, default=actual_kw * 27500)
+                investment_map = np.select(inv_conds, inv_vals, default=np.maximum(550000, actual_kw * 27500))
                 
                 payback_years = np.where(monthly_savings > 0, investment_map / (monthly_savings * 12), 99)
                 
@@ -1424,6 +1445,9 @@ if df is not None:
                     
                     avg_bill = row['ค่าไฟเฉลี่ย/เดือน']
                     u_type = str(row.get('user_type', ''))
+                    
+                    if "ชั่วคราว" in u_type:
+                        return "❌ ยังไม่คุ้มทุน"
                     
                     if "กิจการขนาดใหญ่" in u_type:
                         if avg_bill >= 30000: return "🔵 ควรติด (กิจการขนาดใหญ่)"
@@ -1474,10 +1498,10 @@ if df is not None:
                         map_df['longitude'].values, 
                         map_df['latitude'].values
                     )
-                    st.success("🔄 ระบบตรวจพบพิกัด UTM และได้แปลงเป็นพิกัดบนแผนที่สากล (Lat/Lon) อัตโนมัติ")
+                    st.success("ระบบตรวจพบพิกัด UTM และได้แปลงเป็นพิกัดบนแผนที่สากล (Lat/Lon) อัตโนมัติ")
                 except ImportError:
-                    st.error("🛠️ พบพิกัดรูปแบบ UTM แต่ไม่สามารถแสดงแผนที่ได้เนื่องจากขาดเครื่องมือแปลงพิกัด (`pyproj`)")
-                    st.info("💡 **วิธีแก้ไข:** ให้เปิด Terminal แล้วพิมพ์คำสั่ง `python -m pip install pyproj` จากนั้นกด Refresh หน้าเว็บ")
+                    st.error("พบพิกัดรูปแบบ UTM แต่ไม่สามารถแสดงแผนที่ได้เนื่องจากขาดเครื่องมือแปลงพิกัด (`pyproj`)")
+                    st.info("**วิธีแก้ไข:** ให้เปิด Terminal แล้วพิมพ์คำสั่ง `python -m pip install pyproj` จากนั้นกด Refresh หน้าเว็บ")
             
             # กรองให้เหลือเฉพาะพิกัดในประเทศไทย (Lat: 5-21, Lon: 97-106) เพื่อป้องกันแผนที่ซูมออกไปที่อื่น
             valid_map = map_df[(map_df['latitude'].between(5, 21)) & (map_df['longitude'].between(97, 106))]
@@ -1500,11 +1524,11 @@ if df is not None:
                 st.plotly_chart(fig_map, use_container_width=True, config={"scrollZoom": True})
                 
                 if len(valid_map) < len(map_df):
-                    st.warning(f"⚠️ ซ่อนจุดพิกัด {len(map_df) - len(valid_map):,} จุด เนื่องจากอยู่นอกเขตประเทศไทย หรือพิกัดผิดพลาด")
+                    st.warning(f"ซ่อนจุดพิกัด {len(map_df) - len(valid_map):,} จุด เนื่องจากอยู่นอกเขตประเทศไทย หรือพิกัดผิดพลาด")
             else:
-                st.info("ℹ️ ไม่มีจุดพิกัดบนแผนที่ (ไม่มีลูกค้าเข้าเกณฑ์ 'ควรติดโซล่าร์เซลล์' หรือข้อมูลพิกัดผิดพลาด)")
+                st.info("ไม่มีจุดพิกัดบนแผนที่ (ไม่มีลูกค้าเข้าเกณฑ์ 'ควรติดโซล่าร์เซลล์' หรือข้อมูลพิกัดผิดพลาด)")
         else:
-            st.warning(f"⚠️ พบคอลัมน์เป้าหมาย ({x_col}, {y_col}) แต่ไม่สามารถแปลงให้เป็นตัวเลขพิกัดได้เลย")
+            st.warning(f"พบคอลัมน์เป้าหมาย ({x_col}, {y_col}) แต่ไม่สามารถแปลงให้เป็นตัวเลขพิกัดได้เลย")
             st.write("ตัวอย่างข้อมูลดิบ (Raw Data):", filtered_df[[x_col, y_col]].head())
     else:
         st.info("ไม่พบคอลัมน์พิกัด X (คอลัมน์ G) และ Y (คอลัมน์ H) ในชุดข้อมูล")
@@ -1512,7 +1536,7 @@ if df is not None:
     st.divider()
 
     # --- ค้นหารายบุคคล ---
-    st.subheader("🔍 ค้นหาพฤติกรรมการใช้ไฟฟ้ารายบุคคล")
+    st.subheader("ค้นหาพฤติกรรมการใช้ไฟฟ้ารายบุคคล")
     st.markdown("*(ค้นหาหมายเลขผู้ใช้ไฟเพื่อดูกราฟค่าไฟรายเดือนของลูกค้ารายนั้นๆ)*")
 
     if customer_col:
@@ -1533,6 +1557,9 @@ if df is not None:
                 return False
             
             u_type = str(row['user_type'])
+            if "ชั่วคราว" in u_type:
+                return False
+                
             day_r = 0.5 if "บ้าน" in u_type else (0.7 if "กิจการ" in u_type else 0.85)
             
             target_kw = (avg_kwh * day_r) / 120
@@ -1544,7 +1571,7 @@ if df is not None:
             solar_produced = actual_kw * (120 * 0.931)
             kwh_saved = min(solar_produced, avg_kwh)
             monthly_savings = min(kwh_saved * avg_rate, avg_amt)
-            investment = actual_kw * 35000
+            investment = 145000 if actual_kw <= 3 else (200000 if actual_kw <= 5 else (329000 if actual_kw <= 10 else (454900 if actual_kw <= 15 else max(550000, actual_kw * 27500))))
             payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
             
             return payback <= 7
@@ -1585,12 +1612,12 @@ if df is not None:
                 cust_max_amt = cust_df['amt_invoice'].max()
                 
                 scol1, scol2, scol3 = st.columns(3)
-                scol1.metric("💰 ค่าไฟฟ้ารวมตลอดช่วง", f"฿ {cust_total_amt:,.2f}")
-                scol2.metric("📊 ค่าไฟฟ้าเฉลี่ยต่อเดือน", f"฿ {cust_avg_amt:,.2f}")
-                scol3.metric("📈 ค่าไฟสูงสุดที่เคยจ่าย", f"฿ {cust_max_amt:,.2f}")
+                scol1.metric("ค่าไฟฟ้ารวมตลอดช่วง", f"฿ {cust_total_amt:,.2f}")
+                scol2.metric("ค่าไฟฟ้าเฉลี่ยต่อเดือน", f"฿ {cust_avg_amt:,.2f}")
+                scol3.metric("ค่าไฟสูงสุดที่เคยจ่าย", f"฿ {cust_max_amt:,.2f}")
                 
                 # --- เพิ่มข้อมูลและรายละเอียดเชิงลึกของลูกค้ารายบุคคล ---
-                st.markdown("#### ⚙️ รายละเอียดและคำแนะนำการติดตั้งโซล่าร์เซลล์ (เฉพาะราย)")
+                st.markdown("#### รายละเอียดและคำแนะนำการติดตั้งโซล่าร์เซลล์ (เฉพาะราย)")
                 
                 cust_avg_kwh = cust_df['kwh_total'].mean()
                 user_type = cust_df['user_type_name'].iloc[0] if 'user_type_name' in cust_df.columns else "ไม่ระบุ"
@@ -1643,7 +1670,20 @@ if df is not None:
                 solar_produced = actual_kw * kwh_per_kw
                 kwh_saved = min(solar_produced, cust_avg_kwh)
                 monthly_savings = min(kwh_saved * avg_rate, cust_avg_amt)
-                investment = actual_kw * 35000
+                
+                if actual_kw <= 3:
+                    investment = 145000
+                elif actual_kw <= 5:
+                    investment = 200000
+                elif actual_kw <= 10:
+                    investment = 329000
+                elif actual_kw <= 15:
+                    investment = 454900
+                else:
+                    investment = max(550000, actual_kw * 27500)
+                company_cost = actual_kw * 30000
+                company_profit = investment - company_cost
+                
                 payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
                 
                 if cust_avg_amt >= 2000 and payback <= 7:
@@ -1665,7 +1705,7 @@ if df is not None:
                         st.markdown(f"<div style='text-align:center'><b>คาดการณ์ประหยัดเงิน</b><br><span style='font-size: 1.2em; color: #15803d;'>฿ {monthly_savings:,.2f}</span><br>ต่อเดือน</div>", unsafe_allow_html=True)
                 with dcol3:
                     with st.container(border=True):
-                        st.markdown(f"<div style='text-align:center'><b>ระยะเวลาคืนทุน</b><br><span style='font-size: 1.2em; color: #b45309;'>{payback:,.1f} ปี</span><br>(ลงทุน ฿ {investment:,.0f})</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='text-align:center'><b>ระยะเวลาคืนทุน</b><br><span style='font-size: 1.2em; color: #b45309;'>{payback:,.1f} ปี</span><br>(ลงทุน ฿ {investment:,.0f} | กำไร ฿ {company_profit:,.0f})</div>", unsafe_allow_html=True)
                 with dcol4:
                     with st.container(border=True):
                         st.markdown(f"<div style='text-align:center'><b>สภาพแวดล้อม (Real-Time)</b><br><span style='font-size: 0.75em; color: #6b7280;'>📍 พิกัด: {lat:.4f}, {lon:.4f}</span><br><span style='font-size: 0.9em; color: #6b7280;'>ฝุ่น PM2.5: {pm25:.1f} μg/m³<br>ความเข้มแสง: {100 - cloud:.0f}%</span></div>", unsafe_allow_html=True)
@@ -1680,32 +1720,32 @@ if df is not None:
                 kwh_after = cust_avg_kwh - kwh_saved
                 amt_after = cust_avg_amt - monthly_savings
                 
-                st.markdown("##### ⚖️ เปรียบเทียบก่อนและหลังติดตั้ง (หักลบผลกระทบฝุ่นและเมฆแล้ว)")
+                st.markdown("##### เปรียบเทียบก่อนและหลังติดตั้ง (หักลบผลกระทบฝุ่นและเมฆแล้ว)")
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     with st.container(border=True):
-                        st.info(f"**💡 ก่อนติดตั้ง (เฉลี่ยเดิม)**\n\n⚡ ใช้ไฟ: **{cust_avg_kwh:,.2f}** หน่วย/เดือน\n\n💸 ค่าไฟ: **฿ {cust_avg_amt:,.2f}** /เดือน")
+                        st.info(f"**ก่อนติดตั้ง (เฉลี่ยเดิม)**\n\nใช้ไฟ: **{cust_avg_kwh:,.2f}** หน่วย/เดือน\n\nค่าไฟ: **฿ {cust_avg_amt:,.2f}** /เดือน")
                 with c2:
                     with st.container(border=True):
-                        st.success(f"**☀️ โซล่าร์เซลล์ช่วยลดได้**\n\n📉 ลดการใช้ไฟ: **{kwh_saved:,.2f}** หน่วย/เดือน\n\n💰 ประหยัดเงิน: **฿ {monthly_savings:,.2f}** /เดือน")
+                        st.success(f"**โซล่าร์เซลล์ช่วยลดได้**\n\nลดการใช้ไฟ: **{kwh_saved:,.2f}** หน่วย/เดือน\n\nประหยัดเงิน: **฿ {monthly_savings:,.2f}** /เดือน")
                 with c3:
                     with st.container(border=True):
-                        st.warning(f"**⚡ หลังติดตั้ง (ต้องจ่ายการไฟฟ้า)**\n\n🔋 เหลือการใช้ไฟ: **{max(0, kwh_after):,.2f}** หน่วย/เดือน\n\n🧾 จ่ายค่าไฟ: **฿ {max(0, amt_after):,.2f}** /เดือน")
+                        st.warning(f"**หลังติดตั้ง (ต้องจ่ายการไฟฟ้า)**\n\nเหลือการใช้ไฟ: **{max(0, kwh_after):,.2f}** หน่วย/เดือน\n\nจ่ายค่าไฟ: **฿ {max(0, amt_after):,.2f}** /เดือน")
                         
                 st.markdown("<br>", unsafe_allow_html=True)
-                with st.expander("📝 ดูรายการคำนวณทีละขั้นตอน 9 ข้อ (อิงจากหน่วยไฟและค่าไฟจริงของลูกค้ารายนี้)"):
+                with st.expander("ดูรายการคำนวณทีละขั้นตอน 9 ข้อ (อิงจากหน่วยไฟและค่าไฟจริงของลูกค้ารายนี้)"):
                     pkg_rec = "3 kW" if actual_kw <= 3 else "5 kW" if actual_kw <= 5 else "10 kW" if actual_kw <= 10 else "15 kW" if actual_kw <= 15 else ">15 kW"
                     produced_before = actual_kw * 120
                     lost_kwh = produced_before - solar_produced
                     
                     st.markdown(f"""
-                    **📊 ข้อมูลตั้งต้นของลูกค้ารายนี้:**
+                    **ข้อมูลตั้งต้นของลูกค้ารายนี้:**
                     - การใช้ไฟเฉลี่ย (`kwh_total`): **{cust_avg_kwh:,.2f} หน่วย/เดือน**
                     - ค่าไฟเฉลี่ย (`amt_invoice`): **{cust_avg_amt:,.2f} บาท/เดือน**
                     - อัตราค่าไฟเฉลี่ย: **{avg_rate:,.2f} บาท/หน่วย**
                     - สภาพแวดล้อม ณ พิกัดบ้าน ({lat:.4f}, {lon:.4f}): ฝุ่น PM2.5 = {pm25:.1f} (ลดทอน {d_imp:.1f}%), ความเข้มแสง = {100 - cloud:.0f}% (เมฆลดทอน {l_imp:.1f}%)
 
-                    **🧮 ผลการคำนวณ 9 ขั้นตอน:**
+                    **ผลการคำนวณ 9 ขั้นตอน:**
                     1. **ขนาดระบบโซลาร์เซลล์ที่เหมาะสม:** ขั้นต่ำ `{target_kw:,.2f} kW` *(ประเมินให้ครอบคลุมการใช้ไฟกลางวัน {day_r*100:.0f}%)*
                     2. **จำนวนแผงที่ต้องใช้:** `{int(panels)} แผง` *(แผงละ 550W รวมได้ขนาดติดตั้งจริง = {actual_kw:,.2f} kW)*
                     3. **พลังงานที่ผลิตได้ต่อเดือน (ก่อนหักผลกระทบ):** `{produced_before:,.2f} kWh` *(คิดจาก 120 หน่วย/kW)*
@@ -1733,7 +1773,7 @@ if df is not None:
                 # --- เพิ่มกราฟจุดคุ้มทุน (Breakeven) ---
                 if monthly_savings > 0 and payback < 99:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("##### 📈 กราฟวิเคราะห์จุดคุ้มทุน (Breakeven Analysis)")
+                    st.markdown("##### กราฟวิเคราะห์จุดคุ้มทุน (Breakeven Analysis)")
                     
                     # คำนวณคาดการณ์ไปข้างหน้า (Project ไปจนถึง ปีที่คุ้มทุน + 5 ปี หรืออย่างน้อย 10 ปี)
                     proj_years = max(10, int(payback) + 5)
@@ -1794,7 +1834,7 @@ if df is not None:
     st.divider()
 
     # --- ตารางวิเคราะห์ความคุ้มค่าการติดโซล่าร์เซลล์รายบุคคล ---
-    st.subheader("☀️ วิเคราะห์ความคุ้มค่าการติดโซล่าร์เซลล์รายบ้าน (Real-Time API)")
+    st.subheader("วิเคราะห์ความคุ้มค่าการติดโซล่าร์เซลล์รายบ้าน (Real-Time API)")
     st.markdown("*(คำนวณความคุ้มค่าจากค่าไฟจริง พร้อมดึงข้อมูลความเข้มแสงและค่าฝุ่น PM2.5 แบบเรียลไทม์จากพิกัดของแต่ละบ้าน)*")
 
     if customer_col:
@@ -1877,7 +1917,7 @@ if df is not None:
         
         env_data = {}
         if coord_list:
-            with st.spinner("🌍 กำลังเชื่อมต่อดาวเทียม... ดึงข้อมูลความเข้มแสงและ PM2.5 แบบ Real-Time ให้แต่ละพิกัด..."):
+            with st.spinner("กำลังเชื่อมต่อดาวเทียม... ดึงข้อมูลความเข้มแสงและ PM2.5 แบบ Real-Time ให้แต่ละพิกัด..."):
                 env_data = fetch_realtime_env(coord_list)
 
         # 4. ฟังก์ชันคำนวณผลกระทบต่อแผงโซล่าร์เซลล์
@@ -1949,15 +1989,23 @@ if df is not None:
         cust_summary['monthly_savings'] = np.minimum(cust_summary['monthly_savings'], cust_summary['avg_amt_per_month'])
         
         cust_summary['cost_after_solar'] = cust_summary['avg_amt_per_month'] - cust_summary['monthly_savings']
-        cust_summary['investment'] = cust_summary['actual_kw'] * 35000
+        
+        # ราคาขายแพ็กเกจที่คิดกับลูกค้า (Investment)
+        pkg_conds = [cust_summary['actual_kw'] <= 3, cust_summary['actual_kw'] <= 5, cust_summary['actual_kw'] <= 10, cust_summary['actual_kw'] <= 15]
+        pkg_vals = [145000, 200000, 329000, 454900]
+        cust_summary['investment'] = np.select(pkg_conds, pkg_vals, default=np.maximum(550000, cust_summary['actual_kw'] * 27500))
+        
+        # คำนวณต้นทุนบริษัทและกำไร (สมมติต้นทุนเฉลี่ย 30,000 บาท/kW)
+        cust_summary['company_cost'] = cust_summary['actual_kw'] * 30000
+        cust_summary['company_profit'] = cust_summary['investment'] - cust_summary['company_cost']
         
         cust_summary['payback_years'] = np.where(cust_summary['monthly_savings'] > 0,
                                                  cust_summary['investment'] / (cust_summary['monthly_savings'] * 12),
                                                  99)
         
-        # เงื่อนไขควรติด: ค่าไฟเฉลี่ย >= 2000 และคืนทุน <= 7 ปี
+        # เงื่อนไขควรติด: ค่าไฟเฉลี่ย >= 2000 และคืนทุน <= 7 ปี (และต้องไม่ใช่ไฟฟ้าชั่วคราว)
         cust_summary['should_install'] = np.where(
-            (cust_summary['avg_amt_per_month'] >= 2000) & (cust_summary['payback_years'] <= 7),
+            (cust_summary['avg_amt_per_month'] >= 2000) & (cust_summary['payback_years'] <= 7) & (~cust_summary['user_type_name'].str.contains('ชั่วคราว', na=False)),
             "✅ ควรติด",
             "❌ ยังไม่คุ้ม"
         )
@@ -1965,7 +2013,7 @@ if df is not None:
         # จัดคอลัมน์และเปลี่ยนชื่อเพื่อแสดงผล
         display_df = cust_summary[[
             customer_col, 'user_type_name', 'should_install', 'pm25_real', 'light_intensity', 'avg_kwh_per_month', 'kwh_saved', 'avg_amt_per_month', 'monthly_savings', 'cost_after_solar',
-            'actual_kw', 'recommended_package', 'panels_needed', 'investment', 'payback_years'
+            'actual_kw', 'recommended_package', 'panels_needed', 'investment', 'company_profit', 'payback_years'
         ]].copy()
         
         display_df = display_df.rename(columns={
@@ -1982,7 +2030,8 @@ if df is not None:
             'actual_kw': 'ขนาดติดตั้ง (kW)',
             'recommended_package': 'แพ็กเกจที่แนะนำ',
             'panels_needed': 'จำนวนแผง (แผงละ 550W)',
-            'investment': 'เงินลงทุนโดยประมาณ (บาท)',
+            'investment': 'ราคาขายแพ็กเกจ (บาท)',
+            'company_profit': 'กำไรบริษัท (บาท)',
             'payback_years': 'คืนทุน (ปี)'
         })
         
@@ -1996,20 +2045,39 @@ if df is not None:
         recommended_cust = len(display_df[display_df['คำแนะนำ'] == '✅ ควรติด'])
         pct_recommended = (recommended_cust / total_cust * 100) if total_cust > 0 else 0
         
-        st.markdown("##### 📊 สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
-        mcol1, mcol2, mcol3 = st.columns(3)
+        profitable_cust = len(display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)])
+        
+        st.markdown("##### สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
+        mcol1, mcol2, mcol3, mcol4 = st.columns(4)
         with mcol1:
             with st.container(border=True):
-                st.metric("👥 ลูกค้าที่ประเมินทั้งหมด", f"{total_cust:,} ราย")
+                st.metric("ลูกค้าที่ประเมินทั้งหมด", f"{total_cust:,} ราย")
         with mcol2:
             with st.container(border=True):
-                st.metric("✅ ลูกค้าที่ควรติดตั้ง", f"{recommended_cust:,} ราย")
+                st.metric("ลูกค้าที่ควรติดตั้ง", f"{recommended_cust:,} ราย")
         with mcol3:
             with st.container(border=True):
-                st.metric("📈 คิดเป็นสัดส่วนเป้าหมาย", f"{pct_recommended:,.1f}%")
+                st.metric("คิดเป็นสัดส่วนเป้าหมาย", f"{pct_recommended:,.1f}%")
+        with mcol4:
+            with st.container(border=True):
+                st.metric("ได้กำไร (ในกลุ่มที่ควรติด)", f"{profitable_cust:,} ราย")
+
+        with st.expander("💡 อ่านคำอธิบาย: เกณฑ์ลูกค้าเป้าหมาย และ ลูกค้าเป้าหมายที่ทำกำไร"):
+            st.markdown("""
+            **1. เกณฑ์เป้าหมายทั่วไป (ควรติดโซล่าร์เซลล์):**
+            - ค่าไฟเฉลี่ยรายเดือน **>= 2,000 บาท**
+            - ระยะเวลาคืนทุนประเมิน **<= 7 ปี**
+            - ไม่เป็นผู้ใช้ไฟฟ้าแบบชั่วคราว
+            
+            **2. เกณฑ์เป้าหมายที่ทำกำไร (Profitable Targets):**
+            - เป็นลูกค้าที่ผ่านเกณฑ์ "ควรติดโซล่าร์เซลล์" ในข้อ 1
+            - และบริษัทประเมินแล้วว่าได้ **"กำไร > 0 บาท"** 
+            - *(สูตรประเมิน: ราคาขายแพ็กเกจ - ต้นทุนของบริษัท โดยบริษัทตั้งต้นทุนเหมาไว้ที่ 30,000 บาท/kW)*
+            - **ข้อสังเกต:** ลูกค้าที่ประเมินว่าต้องติดแพ็กเกจขนาด **เกิน 15 kW** จะถูกคัดออกจากกลุ่มทำกำไร เนื่องจากราคาขายเฉลี่ยของแพ็กเกจใหญ่คือ 27,500 บาท/kW ซึ่งต่ำกว่าต้นทุนนั่นเอง
+            """)
 
         # --- ตัวกรองข้อมูลสำหรับตาราง ---
-        st.markdown("**🔎 ตัวกรองข้อมูลตาราง:**")
+        st.markdown("**ตัวกรองข้อมูลตาราง:**")
         
         if not display_df.empty:
             fcol1, fcol2 = st.columns(2)
@@ -2063,7 +2131,10 @@ if df is not None:
             
             display_df = display_df.reset_index(drop=True)
 
-        st.success(f"🎯 **จำนวนลูกค้าเป้าหมายที่ตรงตามเงื่อนไข:** {len(display_df):,} ราย")
+        # กรองข้อมูลเอาเฉพาะกลุ่มที่ "ควรติด" และ "บริษัทได้กำไร"
+        profitable_df = display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)]
+
+        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (เป็นเป้าหมายที่ทำกำไรได้ {len(profitable_df):,} ราย)")
 
         # กำหนดรูปแบบให้มีลูกน้ำและจุดทศนิยมสำหรับตาราง (เพื่อให้ยังคลิกเรียงลำดับในหน้าเว็บได้ปกติ)
         format_dict_solar = {
@@ -2075,17 +2146,80 @@ if df is not None:
             'ประหยัดเงิน (บาท/เดือน)': '{:,.2f}',
             'ค่าไฟสุทธิ (บาท/เดือน)': '{:,.2f}',
             'ขนาดติดตั้ง (kW)': '{:,.2f}',
-            'เงินลงทุนโดยประมาณ (บาท)': '{:,.2f}',
+            'ราคาขายแพ็กเกจ (บาท)': '{:,.2f}',
+            'กำไรบริษัท (บาท)': '{:,.2f}',
             'คืนทุน (ปี)': '{:,.1f}'
         }
         
         # ปรับขยายขีดจำกัดการ Render ของ Pandas Styler ให้รองรับข้อมูลตารางขนาดใหญ่
         pd.set_option("styler.render.max_elements", max(display_df.size, 262144))
         
-        st.dataframe(display_df.style.format(format_dict_solar), use_container_width=True)
+        # สร้าง Tabs เพื่อแยกตารางการแสดงผล
+        tab_all, tab_profit = st.tabs([
+            f"บ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด ({len(display_df)} ราย)", 
+            f"เฉพาะเป้าหมายทำกำไรได้ ({len(profitable_df)} ราย)"
+        ])
+        
+        with tab_all:
+            st.dataframe(display_df.style.format(format_dict_solar), use_container_width=True)
+            # --- ส่วนปุ่ม Export ไฟล์ Excel (ทั้งหมด) ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            if not display_df.empty:
+                buffer_all = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer_all, engine='xlsxwriter') as writer:
+                        display_df.to_excel(writer, index=False, sheet_name='Recommended_Targets')
+                    
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อบ้านที่ควรติดตั้งทั้งหมด (Excel)",
+                        data=buffer_all.getvalue(),
+                        file_name="Recommended_Target_Customers.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key="btn_dl_all_excel"
+                    )
+                except ImportError:
+                    csv_data_all = display_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อบ้านที่ควรติดตั้งทั้งหมด (CSV)",
+                        data=csv_data_all,
+                        file_name="Recommended_Target_Customers.csv",
+                        mime="text/csv",
+                        key="btn_dl_all_csv"
+                    )
+        
+        with tab_profit:
+            st.dataframe(profitable_df.style.format(format_dict_solar), use_container_width=True)
+            # --- ส่วนปุ่ม Export ไฟล์ Excel (ทำกำไร) ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            if not profitable_df.empty:
+                buffer_profit = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer_profit, engine='xlsxwriter') as writer:
+                        profitable_df.to_excel(writer, index=False, sheet_name='Profitable_Targets')
+                    
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อเป้าหมายทำกำไร (Excel)",
+                        data=buffer_profit.getvalue(),
+                        file_name="Profitable_Target_Customers.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        key="btn_dl_profit_excel"
+                    )
+                except ImportError:
+                    csv_data_profit = profitable_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อเป้าหมายทำกำไร (CSV)",
+                        data=csv_data_profit,
+                        file_name="Profitable_Target_Customers.csv",
+                        mime="text/csv",
+                        type="primary",
+                        key="btn_dl_profit_csv"
+                    )
+            else:
+                st.info("ไม่มีข้อมูลลูกค้าที่ตรงตามเงื่อนไขทำกำไร ให้ดาวน์โหลดในขณะนี้")
         
         st.caption("""
-        **💡 สมมติฐานการคำนวณจากข้อมูลการใช้ไฟจริง (อ้างอิงตามมาตรฐานไทย):**
+        **สมมติฐานการคำนวณจากข้อมูลการใช้ไฟจริง (อ้างอิงตามมาตรฐานไทย):**
             - ประเมินให้ระบบโซล่าร์เซลล์ครอบคลุมการใช้ไฟช่วงกลางวันตามพฤติกรรม (บ้านอยู่อาศัย 50%, กิจการ 70%, อื่นๆ 85%)
             - ใช้แผงโซล่าร์เซลล์ขนาด 550W (0.55 kW)
             - 1 kW ผลิตไฟฟ้าได้เฉลี่ย 120 หน่วย/เดือน **(ก่อนหักผลกระทบจากฝุ่นและความเข้มแสง)**
