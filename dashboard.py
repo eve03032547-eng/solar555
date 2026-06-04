@@ -450,7 +450,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
     st.title("🏦 บริการด้านสินเชื่อสำหรับติดตั้งโซล่าร์เซลล์")
     st.markdown("*(ข้อมูลผลิตภัณฑ์สินเชื่อโครงการ PEA SOLAR จากสถาบันการเงินพันธมิตร เพื่อสนับสนุนการเข้าถึงพลังงานสะอาด)*")
     
-    st.image("https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop", use_container_width=True)
+    st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1200&h=400&auto=format&fit=crop", use_container_width=True)
     
     st.markdown("""
     การไฟฟ้าส่วนภูมิภาค (PEA) ได้ร่วมมือกับ **6 สถาบันการเงินชั้นนำของประเทศ** เพื่อให้บริการด้านสินเชื่อสำหรับการติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา (Solar Rooftop) 
@@ -2132,9 +2132,48 @@ if df is not None:
             display_df = display_df.reset_index(drop=True)
 
         # กรองข้อมูลเอาเฉพาะกลุ่มที่ "ควรติด" และ "บริษัทได้กำไร"
-        profitable_df = display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)]
+        profitable_df = display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)].copy()
 
-        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (เป็นเป้าหมายที่ทำกำไรได้ {len(profitable_df):,} ราย)")
+        # --- เพิ่มระบบวิเคราะห์ "โอกาสปิดการขาย" (Lead Scoring) ---
+        def evaluate_lead(row):
+            score = 0
+            # 1. คืนทุนไว ตัดสินใจง่าย (สูงสุด 3 คะแนน)
+            if row['คืนทุน (ปี)'] <= 4.5: score += 3
+            elif row['คืนทุน (ปี)'] <= 5.5: score += 2
+            elif row['คืนทุน (ปี)'] <= 6.5: score += 1
+            
+            # 2. ยอดประหยัดต่อเดือนเห็นผลชัดเจน คุ้มค่า (สูงสุด 3 คะแนน)
+            if row['ประหยัดเงิน (บาท/เดือน)'] >= 5000: score += 3
+            elif row['ประหยัดเงิน (บาท/เดือน)'] >= 3000: score += 2
+            elif row['ประหยัดเงิน (บาท/เดือน)'] >= 1500: score += 1
+            
+            # 3. ขนาดแพ็กเกจยอดนิยม ซื้อง่ายขายคล่อง และบริษัททำกำไรได้ดี (สูงสุด 2 คะแนน)
+            if 5 <= row['ขนาดติดตั้ง (kW)'] <= 10: score += 2
+            elif 3 < row['ขนาดติดตั้ง (kW)'] <= 15: score += 1
+            
+            if score >= 6: return "🔥 โอกาสสูงมาก (Hot Lead)"
+            elif score >= 4: return "⭐ โอกาสปานกลาง (Warm Lead)"
+            else: return "💡 โอกาสทั่วไป (Cold Lead)"
+
+        if not profitable_df.empty:
+            profitable_df['โอกาสปิดการขาย'] = profitable_df.apply(evaluate_lead, axis=1)
+            
+            # จัดเรียงคอลัมน์ให้ 'โอกาสปิดการขาย' มาอยู่ถัดจาก 'คำแนะนำ'
+            cols = list(profitable_df.columns)
+            cols.insert(3, cols.pop(cols.index('โอกาสปิดการขาย')))
+            profitable_df = profitable_df[cols]
+            
+            # เรียงลำดับให้ Hot Lead ขึ้นก่อน และตามด้วยกำไรบริษัทสูงสุด
+            profitable_df['score_order'] = profitable_df['โอกาสปิดการขาย'].map({
+                "🔥 โอกาสสูงมาก (Hot Lead)": 1, 
+                "⭐ โอกาสปานกลาง (Warm Lead)": 2, 
+                "💡 โอกาสทั่วไป (Cold Lead)": 3
+            })
+            profitable_df = profitable_df.sort_values(by=['score_order', 'กำไรบริษัท (บาท)'], ascending=[True, False]).drop(columns=['score_order'])
+
+        hot_leads_df = profitable_df[profitable_df['โอกาสปิดการขาย'] == "🔥 โอกาสสูงมาก (Hot Lead)"] if not profitable_df.empty else pd.DataFrame()
+
+        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (ทำกำไรได้ {len(profitable_df):,} ราย | 🎯 **เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
 
         # กำหนดรูปแบบให้มีลูกน้ำและจุดทศนิยมสำหรับตาราง (เพื่อให้ยังคลิกเรียงลำดับในหน้าเว็บได้ปกติ)
         format_dict_solar = {
@@ -2155,9 +2194,10 @@ if df is not None:
         pd.set_option("styler.render.max_elements", max(display_df.size, 262144))
         
         # สร้าง Tabs เพื่อแยกตารางการแสดงผล
-        tab_all, tab_profit = st.tabs([
-            f"บ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด ({len(display_df)} ราย)", 
-            f"เฉพาะเป้าหมายทำกำไรได้ ({len(profitable_df)} ราย)"
+        tab_all, tab_profit, tab_hot = st.tabs([
+            f"บ้านที่ควรติดทั้งหมด ({len(display_df)} ราย)", 
+            f"เป้าหมายทำกำไรได้ ({len(profitable_df)} ราย)",
+            f"🔥 โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)"
         ])
         
         with tab_all:
@@ -2217,6 +2257,40 @@ if df is not None:
                     )
             else:
                 st.info("ไม่มีข้อมูลลูกค้าที่ตรงตามเงื่อนไขทำกำไร ให้ดาวน์โหลดในขณะนี้")
+                
+        with tab_hot:
+            st.markdown("#### 🎯 กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
+            st.markdown("ลูกค้ากลุ่มนี้คือ **'เพชรยอดมงกุฎ' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) ยอดประหยัดเงินต่อเดือนสูง และสนใจติดตั้งในแพ็กเกจขนาด 5-10 kW ซึ่งบริษัททำกำไรส่วนต่างได้ดีเยี่ยม")
+            
+            st.dataframe(hot_leads_df.style.format(format_dict_solar), use_container_width=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if not hot_leads_df.empty:
+                buffer_hot = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer_hot, engine='xlsxwriter') as writer:
+                        hot_leads_df.to_excel(writer, index=False, sheet_name='Hot_Leads')
+                    
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อ Hot Leads (Excel)",
+                        data=buffer_hot.getvalue(),
+                        file_name="Hot_Leads_Target_Customers.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        key="btn_dl_hot_excel"
+                    )
+                except ImportError:
+                    csv_data_hot = hot_leads_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อ Hot Leads (CSV)",
+                        data=csv_data_hot,
+                        file_name="Hot_Leads_Target_Customers.csv",
+                        mime="text/csv",
+                        type="primary",
+                        key="btn_dl_hot_csv"
+                    )
+            else:
+                st.info("ไม่มีข้อมูลลูกค้ากลุ่ม Hot Leads ในขณะนี้")
         
         st.caption("""
         **สมมติฐานการคำนวณจากข้อมูลการใช้ไฟจริง (อ้างอิงตามมาตรฐานไทย):**
