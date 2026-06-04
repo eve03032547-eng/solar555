@@ -1036,6 +1036,41 @@ if df is not None:
         st.write("")
         st.write("")
         
+        # ---------------- CONTACT US ----------------
+        st.markdown("## 📞 สนใจติดตั้ง / ติดต่อเรา (Contact Us)")
+        st.markdown("ทีมวิศวกรของเราพร้อมให้คำปรึกษาและประเมินหน้างานเบื้องต้น **ฟรี!** ไม่มีค่าใช้จ่าย ติดต่อเราได้ผ่านช่องทางด้านล่างนี้")
+        
+        c_contact1, c_contact2, c_contact3, c_contact4 = st.columns(4)
+        with c_contact1:
+            with st.container(border=True):
+                line_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45" style="margin-bottom: 5px;"><path fill="#00C300" d="M24 10.3c0-5.7-5.4-10.3-12-10.3S0 4.6 0 10.3c0 5 4.3 9.3 10.1 10.1 1 .2 2.4.6 2.7 1.4.2.6.2 1.5-.1 2.6-.2.9-.8 2.8-.8 2.8s-.3.9 1.3.1c1.5-.8 8.1-4.7 10.2-9 1-2.4 1.2-4.9.6-7z"/><path fill="#FFF" d="M6 13h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v3.4h.9c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4zm3.9 0h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v4.2c0 .2-.2.4-.4.4zm3.8-3.4v3.1c0 .2-.2.4-.4.4h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v1.8l1.7-2c.1-.2.3-.2.5-.2h.9c.2 0 .2.3.1.5L14.7 10l1.8 2.5c.2.2.1.5-.1.5h-1c-.2 0-.4-.1-.5-.3l-1.2-1.7zm5.9 3.4h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h2.1c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.2c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.6c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4z"/></svg>'''
+                st.markdown(f"<div style='text-align:center;'>{line_svg}</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #16a34a; font-weight: bold;'>LINE Official</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>@SolarJoyEnergy</div>", unsafe_allow_html=True)
+                st.link_button("แอดไลน์", "https://line.me/th/", use_container_width=True)
+        with c_contact2:
+            with st.container(border=True):
+                fb_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45" style="margin-bottom: 5px;"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>'''
+                st.markdown(f"<div style='text-align:center;'>{fb_svg}</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #0284c7; font-weight: bold;'>Facebook Page</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>SolarJoy Energy</div>", unsafe_allow_html=True)
+                st.link_button("ทักแชท", "https://facebook.com/", use_container_width=True)
+        with c_contact3:
+            with st.container(border=True):
+                st.markdown("<div style='text-align:center; font-size: 40px; margin-bottom: 10px;'>📱</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #ea580c; font-weight: bold;'>โทรศัพท์ (Hotline)</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>02-123-4567</div>", unsafe_allow_html=True)
+                st.link_button("โทรติดต่อ", "tel:021234567", use_container_width=True)
+        with c_contact4:
+            with st.container(border=True):
+                st.markdown("<div style='text-align:center; font-size: 40px; margin-bottom: 10px;'>📧</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #6d28d9; font-weight: bold;'>อีเมล (Email)</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>hello@solarjoy.com</div>", unsafe_allow_html=True)
+                st.link_button("ส่งอีเมล", "mailto:hello@solarjoy.com", use_container_width=True)
+                
+        st.write("")
+        st.write("")
+
         # ---------------- FOOTER ----------------
         st.markdown("""
         <hr style="margin-top: 50px;">
