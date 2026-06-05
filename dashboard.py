@@ -14,7 +14,7 @@ import io
 
 # ตรวจสอบว่ารันผ่าน Streamlit หรือไม่ ถ้าไม่ใช่ (เช่น กดปุ่ม Run ปกติ) ให้รัน streamlit อัตโนมัติ
 if not st.runtime.exists():
-    print("🚀 กำลังเปิดหน้าเว็บ Streamlit อัตโนมัติ...")
+    print("กำลังเปิดหน้าเว็บ Streamlit อัตโนมัติ...")
     subprocess.run([sys.executable, "-m", "streamlit", "run", sys.argv[0]])
     sys.exit(0)
 
@@ -25,12 +25,12 @@ pio.templates.default = "plotly_white"
 pio.templates["plotly_white"].layout.font.family = "'Noto Sans Thai', 'Kanit', 'Leelawadee UI', sans-serif"
 
 # ตั้งค่าหน้าจอ Dashboard
-st.set_page_config(page_title="Solar Analytics", page_icon="☀️", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Solar Analytics", layout="wide", initial_sidebar_state="expanded")
 
-# --- 🎨 ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
+# --- ปรับแต่งหน้าตาและ CSS (Global Styling & Fonts) ---
 st.markdown("""
 <style>
-/* 🌟 โหลดฟอนต์ Noto Sans Thai มาจาก Google Fonts (ต้องอยู่บนสุดเสมอ) */
+/* โหลดฟอนต์ Noto Sans Thai มาจาก Google Fonts (ต้องอยู่บนสุดเสมอ) */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
 
 /* ซ่อนเมนู default */
@@ -53,7 +53,7 @@ html, body, div, span, p, h1, h2, h3, h4, h5, h6, button, input, select, textare
     font-family: 'Noto Sans Thai', 'Kanit', 'Prompt', 'Leelawadee UI', 'Sukhumvit Set', sans-serif !important;
 }
 
-/* 🔥 ล็อก Sidebar ให้กางตลอดเวลา (เฉพาะจอคอม/แท็บเล็ต) */
+/* ล็อก Sidebar ให้กางตลอดเวลา (เฉพาะจอคอม/แท็บเล็ต) */
 @media (min-width: 768px) {
     [data-testid="stSidebarCollapseButton"],
     [data-testid="collapsedControl"] {
@@ -62,12 +62,13 @@ html, body, div, span, p, h1, h2, h3, h4, h5, h6, button, input, select, textare
     section[data-testid="stSidebar"] {
         min-width: 260px !important;
         max-width: 260px !important;
+        width: 260px !important;
         transform: none !important;
         visibility: visible !important;
     }
 }
 
-/* 🔥 Sidebar Glass Effect */
+/* Sidebar Glass Effect */
 section[data-testid="stSidebar"] {
     background:
     linear-gradient(
@@ -77,7 +78,6 @@ section[data-testid="stSidebar"] {
     #172554 100%
     );
     border-right: 1px solid rgba(255,255,255,0.08);
-    width: 260px !important;
 }
 
 /* ลด padding */
@@ -132,7 +132,7 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
     color: #0f172a !important;
 }
 
-/* 📊 ตกแต่ง Metric Cards (กล่องตัวเลข) */
+/* ตกแต่ง Metric Cards (กล่องตัวเลข) */
 [data-testid="stMetric"] {
     background: linear-gradient(135deg, #ffffff, #f8fafc);
     padding: 15px 20px;
@@ -146,7 +146,7 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
     box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
-/* 🗂️ ตกแต่ง Container (แบบ Card 3D) ให้แสดงผลทุกหน้า */
+/* ตกแต่ง Container (แบบ Card 3D) ให้แสดงผลทุกหน้า */
 [data-testid="stVerticalBlockBorderWrapper"] {
     border-radius: 16px;
     background-color: #ffffff;
@@ -311,6 +311,35 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
 [data-testid="stExpander"] details summary [data-testid="stIconMaterial"] {
     display: none !important;
 }
+
+/* --- RESPONSIVE MOBILE (ปรับขนาดให้พอดีบนโทรศัพท์มือถือ) --- */
+@media (max-width: 768px) {
+    .hero {
+        padding: 30px 20px;
+        text-align: center;
+        justify-content: center;
+        border-radius: 20px;
+        min-height: auto;
+    }
+    .hero-title {
+        font-size: 32px !important;
+        line-height: 1.3;
+    }
+    .hero-sub {
+        font-size: 16px !important;
+        margin-top: 15px;
+    }
+    .hero-button {
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+    .hero::before {
+        display: none; /* ซ่อนแสงสะท้อนบนมือถือไม่ให้ล้นจอ */
+    }
+    .card {
+        padding: 20px;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -433,11 +462,11 @@ with st.sidebar:
 
 # Map ชื่อเมนูใหม่กลับไปยังตัวแปรเดิมเพื่อให้โค้ดด้านล่างทำงานได้โดยไม่ต้องแก้ If Conditions
 page_map = {
-    "หน้าแรก": "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)",
-    "วิเคราะห์ผู้ใช้ไฟ": "📊 แดชบอร์ดวิเคราะห์",
-    "ค้นหาเป้าหมาย": "🎯 ค้นหาลูกค้าเป้าหมาย",
-    "คำนวณโซลาร์": "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)",
-    "บริการสินเชื่อ": "🏦 บริการด้านสินเชื่อ"
+    "หน้าแรก": "หน้าแรก (ข้อมูลบริการและแพ็กเกจ)",
+    "วิเคราะห์ผู้ใช้ไฟ": "แดชบอร์ดวิเคราะห์",
+    "ค้นหาเป้าหมาย": "ค้นหาลูกค้าเป้าหมาย",
+    "คำนวณโซลาร์": "คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)",
+    "บริการสินเชื่อ": "บริการด้านสินเชื่อ"
 }
 page = page_map[st.session_state.active_page]
 
@@ -446,8 +475,8 @@ st.divider()
 # ==========================================
 # ส่วนที่ 5: หน้าบริการด้านสินเชื่อ
 # ==========================================
-if page == "🏦 บริการด้านสินเชื่อ":
-    st.title("🏦 บริการด้านสินเชื่อสำหรับติดตั้งโซล่าร์เซลล์")
+if page == "บริการด้านสินเชื่อ":
+    st.title("บริการด้านสินเชื่อสำหรับติดตั้งโซล่าร์เซลล์")
     st.markdown("*(ข้อมูลผลิตภัณฑ์สินเชื่อโครงการ PEA SOLAR จากสถาบันการเงินพันธมิตร เพื่อสนับสนุนการเข้าถึงพลังงานสะอาด)*")
     
     st.image("https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1200&h=400&auto=format&fit=crop", use_container_width=True)
@@ -459,7 +488,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
     st.divider()
 
     # แบ่งเป็น 2 แท็บ: สำหรับบ้านพักอาศัย และ สำหรับภาคธุรกิจ
-    tab1, tab2 = st.tabs(["🏠 สินเชื่อสำหรับบ้านพักอาศัย", "🏢 สินเชื่อสำหรับภาคธุรกิจ (SME & Corporate)"])
+    tab1, tab2 = st.tabs(["สินเชื่อสำหรับบ้านพักอาศัย", "สินเชื่อสำหรับภาคธุรกิจ (SME & Corporate)"])
     
     with tab1:
         st.subheader("สินเชื่อติดตั้งโซล่าร์เซลล์ สำหรับบ้านพักอาศัย")
@@ -471,7 +500,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 100% ของค่าติดตั้ง")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 30 ปี")
                 st.markdown("- **จุดเด่น:** รับดอกเบี้ยพิเศษ 0% นาน 3 เดือน พร้อมสิทธิพิเศษ ฟรีค่าสำรวจออกแบบ ฟรีค่าเชื่อมต่อระบบ และฟรีล้างแผงโซลาร์ 2 ปี")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.kasikornbank.com/th/personal/loan/home-loan/pages/solar-rooftop.aspx", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.kasikornbank.com/th/personal/loan/home-loan/pages/solar-rooftop.aspx", use_container_width=True)
         with c2:
             with st.container(border=True):
                 st.markdown(f"<h3 style='color: #0284c7; display: flex; align-items: center; gap: 8px;'><img src='{get_base64_image('กรุงเทพ.jpg')}' height='30'> ธนาคารกรุงเทพ</h3>", unsafe_allow_html=True)
@@ -479,7 +508,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 10 ล้านบาท")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 30 ปี")
                 st.markdown("- **จุดเด่น:** อัตราดอกเบี้ยพิเศษตลอดอายุสัญญา (ประมาณ 5.78% - 6.13% ต่อปี) เพื่อปรับปรุงบ้านและประหยัดพลังงาน")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.bangkokbank.com/th-TH/Personal/My-Home/Bualuang-Poonpol-Green-Loan", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.bangkokbank.com/th-TH/Personal/My-Home/Bualuang-Poonpol-Green-Loan", use_container_width=True)
 
         c3, c4 = st.columns(2)
         with c3:
@@ -489,7 +518,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 50 ล้านบาท")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 30 ปี")
                 st.markdown("- **จุดเด่น:** สินเชื่อบ้านแลกเงิน (Green Cash to Home) หรือรีไฟแนนซ์ (Green Top Up) ดอกเบี้ยเฉลี่ย 3 ปีแรกเริ่มต้น 3.49%")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.uob.co.th/personal/loans/home-loan/u-green.page", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.uob.co.th/personal/loans/home-loan/u-green.page", use_container_width=True)
         with c4:
             with st.container(border=True):
                 st.markdown(f"<h3 style='color: #db2777; display: flex; align-items: center; gap: 8px;'><img src='{get_base64_image('ออมสิน.jpg')}' height='30'> ธนาคารออมสิน</h3>", unsafe_allow_html=True)
@@ -497,7 +526,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 110% (รวมซื้อบ้าน/ตกแต่ง)")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 40 ปี")
                 st.markdown("- **จุดเด่น:** สนับสนุนสินเชื่อดอกเบี้ยต่ำเพื่อที่อยู่อาศัยประหยัดพลังงาน เป็นมิตรกับสิ่งแวดล้อม")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.gsb.or.th/promotions/gsb-green-home-loan/", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.gsb.or.th/promotions/gsb-green-home-loan/", use_container_width=True)
 
     with tab2:
         st.subheader("สินเชื่อติดตั้งโซล่าร์เซลล์ สำหรับภาคธุรกิจและ SME")
@@ -509,7 +538,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 100% (หรือสูงสุด 3 ล้านบาท สำหรับ SME ขนาดเล็ก)")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 8 ปี")
                 st.markdown("- **จุดเด่น:** ไม่ต้องผ่อนเงินต้นและดอกเบี้ย 6 เดือนแรก อัตราดอกเบี้ยเริ่มต้น 1.99% ต่อปี ใน 2 ปีแรก")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.kasikornbank.com/th/business/sme/loan/solar-rooftop/pages/index.aspx", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.kasikornbank.com/th/business/sme/loan/solar-rooftop/pages/index.aspx", use_container_width=True)
         with b2:
             with st.container(border=True):
                 st.markdown(f"<h3 style='color: #ea580c; display: flex; align-items: center; gap: 8px;'><img src='{get_base64_image('ttb.png')}' height='25'> ทีเอ็มบีธนชาต (ttb)</h3>", unsafe_allow_html=True)
@@ -517,7 +546,7 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 100% ของมูลค่าการติดตั้ง")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 8 ปี")
                 st.markdown("- **จุดเด่น:** สนับสนุนผู้ประกอบการมุ่งสู่เศรษฐกิจคาร์บอนต่ำ ช่วยประหยัดต้นทุนค่าไฟอย่างยั่งยืน")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.ttbbank.com/th/sme/sme-loan/business-loan/sme-green-loan", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.ttbbank.com/th/sme/sme-loan/business-loan/sme-green-loan", use_container_width=True)
 
         b3, b4 = st.columns(2)
         with b3:
@@ -527,26 +556,26 @@ if page == "🏦 บริการด้านสินเชื่อ":
                 st.markdown("- **วงเงินกู้สูงสุด:** 10 ล้านบาท")
                 st.markdown("- **ระยะเวลาผ่อน:** นานสูงสุด 10 ปี")
                 st.markdown("- **จุดเด่น:** อัตราดอกเบี้ยต่ำเพียง 3% ต่อปี คงที่ 3 ปีแรก เพื่อยกระดับและเพิ่มผลิตภาพธุรกิจสีเขียว")
-                st.link_button("🌐 ดูรายละเอียดบนเว็บไซต์", "https://www.smebank.co.th/products/sme-green-productivity/", use_container_width=True)
+                st.link_button("ดูรายละเอียดบนเว็บไซต์", "https://www.smebank.co.th/products/sme-green-productivity/", use_container_width=True)
         with b4:
             with st.container(border=True):
-                st.markdown("### 💡 สนใจขอรับบริการสินเชื่อ")
+                st.markdown("### สนใจขอรับบริการสินเชื่อ")
                 st.markdown("ลูกค้าที่สนใจสามารถแจ้งความประสงค์ผ่านสำนักงานการไฟฟ้าส่วนภูมิภาค (PEA) ที่ดูแลโครงการ หรือติดต่อสาขาของธนาคารพันธมิตรทั่วประเทศ")
                 st.info("เงื่อนไขการอนุมัติสินเชื่อ วงเงิน และอัตราดอกเบี้ย เป็นไปตามที่แต่ละธนาคารกำหนด")
-                st.link_button("🌐 ดูข้อมูลโครงการ PEA SOLAR หน้าหลัก", "https://peasolar.pea.co.th/", use_container_width=True)
+                st.link_button("ดูข้อมูลโครงการ PEA SOLAR หน้าหลัก", "https://peasolar.pea.co.th/", use_container_width=True)
 
     st.divider()
     
     # เพิ่มเครื่องคำนวณยอดผ่อนชำระเบื้องต้น
-    st.subheader("🧮 เครื่องคำนวณยอดผ่อนชำระสินเชื่อเบื้องต้น")
+    st.subheader("เครื่องคำนวณยอดผ่อนชำระสินเชื่อเบื้องต้น")
     st.markdown("*(ประเมินค่างวดรายเดือนแบบลดต้นลดดอก (Effective Rate) เพื่อเปรียบเทียบกับค่าไฟที่ประหยัดได้)*")
     
     calc_col1, calc_col2 = st.columns([1, 1])
     with calc_col1:
         with st.container(border=True):
-            loan_amount = st.number_input("💵 วงเงินที่ต้องการกู้ (ราคาแพ็กเกจ)", min_value=10000, max_value=5000000, value=200000, step=10000)
-            interest_rate = st.number_input("📈 อัตราดอกเบี้ยเฉลี่ย (% ต่อปี)", min_value=0.0, max_value=20.0, value=5.5, step=0.1)
-            loan_years = st.number_input("🗓️ ระยะเวลาผ่อนชำระ (ปี)", min_value=1, max_value=40, value=7, step=1)
+            loan_amount = st.number_input("วงเงินที่ต้องการกู้ (ราคาแพ็กเกจ)", min_value=10000, max_value=5000000, value=200000, step=10000)
+            interest_rate = st.number_input("อัตราดอกเบี้ยเฉลี่ย (% ต่อปี)", min_value=0.0, max_value=20.0, value=5.5, step=0.1)
+            loan_years = st.number_input("ระยะเวลาผ่อนชำระ (ปี)", min_value=1, max_value=40, value=7, step=1)
             
     with calc_col2:
         with st.container(border=True):
@@ -566,66 +595,66 @@ if page == "🏦 บริการด้านสินเชื่อ":
             st.markdown("<div style='text-align: center; color: #64748B;'>ยอดผ่อนชำระต่อเดือนประมาณ</div>", unsafe_allow_html=True)
             st.markdown(f"<div style='text-align: center; font-size: 2.5rem; font-weight: bold; color: #0284C7; margin-bottom: 10px;'>฿ {monthly_payment:,.2f}</div>", unsafe_allow_html=True)
             st.divider()
-            st.markdown(f"- 🏦 ยอดเงินต้น: **฿ {loan_amount:,.0f}**")
-            st.markdown(f"- 💸 ดอกเบี้ยรวมตลอดสัญญา: **฿ {total_interest:,.0f}**")
-            st.markdown(f"- 📋 ยอดชำระรวมทั้งหมด: **฿ {total_payment:,.0f}**")
+            st.markdown(f"- ยอดเงินต้น: **฿ {loan_amount:,.0f}**")
+            st.markdown(f"- ดอกเบี้ยรวมตลอดสัญญา: **฿ {total_interest:,.0f}**")
+            st.markdown(f"- ยอดชำระรวมทั้งหมด: **฿ {total_payment:,.0f}**")
             
-            st.info("💡 **ทริค:** นำ 'ยอดผ่อนชำระนี้' ไปเทียบกับ 'ค่าไฟที่ประหยัดได้' หากยอดผ่อนน้อยกว่าค่าไฟที่ลดได้ แสดงว่าคุณได้กำไรตั้งแต่เดือนแรกที่ติดตั้ง!")
+            st.info("**คำแนะนำ:** นำ 'ยอดผ่อนชำระนี้' ไปเทียบกับ 'ค่าไฟที่ประหยัดได้' หากยอดผ่อนน้อยกว่าค่าไฟที่ลดได้ แสดงว่าคุณได้กำไรตั้งแต่เดือนแรกที่ติดตั้ง!")
     
-    st.stop() # 🛑 บล็อกโค้ดตรงนี้เด็ดขาด ไม่ให้โค้ดส่วนค้นหาเป้าหมายหรือแผนที่ข้างล่างทำงานได้
+    st.stop() # บล็อกโค้ดตรงนี้เด็ดขาด ไม่ให้โค้ดส่วนค้นหาเป้าหมายหรือแผนที่ข้างล่างทำงานได้
 # ==========================================
 # ส่วนที่ 4: หน้าคำนวณโซล่าร์เซลล์จากเครื่องใช้ไฟฟ้า (แยกออกมาให้ทำงานอิสระได้)
 # ==========================================
-if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)":
-    st.title("🧮 คำนวณขนาดโซล่าร์เซลล์ที่เหมาะสม")
+if page == "คำนวณโซล่าร์เซลล์ (ด้วยตัวเอง)":
+    st.title("คำนวณขนาดโซล่าร์เซลล์ที่เหมาะสม")
     st.markdown("*(ประเมินขนาดแผงโซล่าร์เซลล์ On-Grid เพื่อช่วยลดค่าไฟในช่วงเวลากลางวันอย่างคุ้มค่า)*")
     
-    st.markdown("### 📄 วิธีที่ 1: ประเมินแบบด่วนจากบิลค่าไฟ")
-    st.info("💡 นำตัวเลข **'หน่วยการใช้ไฟฟ้ารวม (kWh)'** จากบิลค่าไฟเดือนล่าสุดของคุณมากรอก (หากระบุค่าในช่องนี้ ระบบจะใช้ค่านี้คำนวณเป็นหลักทันที)")
+    st.markdown("### วิธีที่ 1: ประเมินแบบด่วนจากบิลค่าไฟ")
+    st.info("นำตัวเลข **'หน่วยการใช้ไฟฟ้ารวม (kWh)'** จากบิลค่าไฟเดือนล่าสุดของคุณมากรอก (หากระบุค่าในช่องนี้ ระบบจะใช้ค่านี้คำนวณเป็นหลักทันที)")
     
     c1, c2 = st.columns(2)
     with c1:
-        manual_monthly_kwh = st.number_input("⚡ ระบุหน่วยการใช้ไฟรวมต่อเดือน (kWh)", min_value=0.0, value=0.0, step=100.0)
+        manual_monthly_kwh = st.number_input("ระบุหน่วยการใช้ไฟรวมต่อเดือน (kWh)", min_value=0.0, value=0.0, step=100.0)
     with c2:
-        usage_type = st.selectbox("ประเภทสถานที่ (เพื่อกะสัดส่วนการใช้ไฟกลางวัน):", ["🏠 บ้านพักอาศัย (ใช้ไฟกลางวัน ~50%)", "🏢 กิจการ/ออฟฟิศ (ใช้ไฟกลางวัน ~70%)"])
+        usage_type = st.selectbox("ประเภทสถานที่ (เพื่อกะสัดส่วนการใช้ไฟกลางวัน):", ["บ้านพักอาศัย (ใช้ไฟกลางวัน ~50%)", "กิจการ/ออฟฟิศ (ใช้ไฟกลางวัน ~70%)"])
         
     day_ratio = 0.5 if "บ้าน" in usage_type else 0.7
     total_daily_kwh_manual = (manual_monthly_kwh / 30.0) * day_ratio if manual_monthly_kwh > 0 else 0.0
     
     st.markdown("---")
-    st.markdown("### 🔌 วิธีที่ 2: ประเมินแบบละเอียดจากเครื่องใช้ไฟฟ้า")
-    st.info("💡 **คำแนะนำ:** กรุณากรอกเฉพาะชั่วโมงการใช้งานในช่วงที่ **มีแสงแดด (ประมาณ 08:00 - 17:00 น.)** เท่านั้น เนื่องจากระบบไม่มีแบตเตอรี่สำรองไฟ")
+    st.markdown("### วิธีที่ 2: ประเมินแบบละเอียดจากเครื่องใช้ไฟฟ้า")
+    st.info("**คำแนะนำ:** กรุณากรอกเฉพาะชั่วโมงการใช้งานในช่วงที่ **มีแสงแดด (ประมาณ 08:00 - 17:00 น.)** เท่านั้น เนื่องจากระบบไม่มีแบตเตอรี่สำรองไฟ")
     
     # รายการเครื่องใช้ไฟฟ้าเริ่มต้น
     initial_appliances = [
-        {"name": "❄️ แอร์ 9,000 BTU", "watts": 800, "qty": 0, "hrs": 0.0},
-        {"name": "❄️ แอร์ 12,000 BTU", "watts": 1000, "qty": 0, "hrs": 0.0},
-        {"name": "❄️ แอร์ 18,000 BTU", "watts": 1500, "qty": 0, "hrs": 0.0},
-        {"name": "🧊 ตู้เย็น (ทำงานตลอดวัน)", "watts": 150, "qty": 1, "hrs": 8.0},
-        {"name": "📺 ทีวี", "watts": 100, "qty": 0, "hrs": 0.0},
-        {"name": "💻 คอมพิวเตอร์ / โน้ตบุ๊ก", "watts": 200, "qty": 0, "hrs": 0.0},
-        {"name": "💡 หลอดไฟ", "watts": 15, "qty": 0, "hrs": 0.0},
-        {"name": "🌀 พัดลม", "watts": 50, "qty": 0, "hrs": 0.0},
-        {"name": "👕 เครื่องซักผ้า", "watts": 400, "qty": 0, "hrs": 0.0},
-        {"name": "💧 ปั๊มน้ำ", "watts": 300, "qty": 0, "hrs": 0.0},
-        {"name": "🔌 อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0},
+        {"name": "แอร์ 9,000 BTU", "watts": 800, "qty": 0, "hrs": 0.0},
+        {"name": "แอร์ 12,000 BTU", "watts": 1000, "qty": 0, "hrs": 0.0},
+        {"name": "แอร์ 18,000 BTU", "watts": 1500, "qty": 0, "hrs": 0.0},
+        {"name": "ตู้เย็น (ทำงานตลอดวัน)", "watts": 150, "qty": 1, "hrs": 8.0},
+        {"name": "ทีวี", "watts": 100, "qty": 0, "hrs": 0.0},
+        {"name": "คอมพิวเตอร์ / โน้ตบุ๊ก", "watts": 200, "qty": 0, "hrs": 0.0},
+        {"name": "หลอดไฟ", "watts": 15, "qty": 0, "hrs": 0.0},
+        {"name": "พัดลม", "watts": 50, "qty": 0, "hrs": 0.0},
+        {"name": "เครื่องซักผ้า", "watts": 400, "qty": 0, "hrs": 0.0},
+        {"name": "ปั๊มน้ำ", "watts": 300, "qty": 0, "hrs": 0.0},
+        {"name": "อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0},
     ]
     if "calc_appliances" not in st.session_state:
         st.session_state.calc_appliances = initial_appliances
     
     other_appliances_options = {
-        "🔌 อื่นๆ (ระบุกำลังไฟเอง)": 100,
-        "♨️ ไมโครเวฟ": 800,
-        "☕ กาต้มน้ำร้อน": 1500,
-        "🍚 หม้อหุงข้าว": 600,
-        "🍳 เตาแม่เหล็กไฟฟ้า": 1500,
-        "🔥 เครื่องทำน้ำอุ่น": 3500,
-        "🌬️ ไดร์เป่าผม": 1200,
-        "👔 เตารีด": 1000,
-        "🧹 เครื่องดูดฝุ่น": 1200,
-        "💨 เครื่องฟอกอากาศ": 400,
-        "🍞 เตาอบไฟฟ้า": 2000,
-        "💨 ปั๊มลม": 1500
+        "อื่นๆ (ระบุกำลังไฟเอง)": 100,
+        "ไมโครเวฟ": 800,
+        "กาต้มน้ำร้อน": 1500,
+        "หม้อหุงข้าว": 600,
+        "เตาแม่เหล็กไฟฟ้า": 1500,
+        "เครื่องทำน้ำอุ่น": 3500,
+        "ไดร์เป่าผม": 1200,
+        "เตารีด": 1000,
+        "เครื่องดูดฝุ่น": 1200,
+        "เครื่องฟอกอากาศ": 400,
+        "เตาอบไฟฟ้า": 2000,
+        "ปั๊มลม": 1500
     }
     
     total_daily_wh = 0
@@ -644,7 +673,7 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
         
         if "อื่นๆ" in app['name']:
             selected_other = row[0].selectbox(f"app_select_{i}", options=list(other_appliances_options.keys()), label_visibility="collapsed")
-            if selected_other == "🔌 อื่นๆ (ระบุกำลังไฟเอง)":
+            if selected_other == "อื่นๆ (ระบุกำลังไฟเอง)":
                 custom_w = row[1].number_input(f"w_{i}", min_value=0, max_value=10000, value=int(app.get('watts', 100)), step=100, label_visibility="collapsed")
                 app['watts'] = custom_w
             else:
@@ -666,11 +695,11 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
     st.markdown("<br>", unsafe_allow_html=True) # เพิ่มช่องว่างด้านบนปุ่ม
     add_col1, add_col2, add_col3 = st.columns([2, 2, 2])
     with add_col1: # ปุ่มเพิ่ม
-        if st.button("➕ เพิ่มรายการ 'อื่นๆ'", use_container_width=True):
-            st.session_state.calc_appliances.append({"name": "🔌 อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0})
+        if st.button("เพิ่มรายการ 'อื่นๆ'", use_container_width=True):
+            st.session_state.calc_appliances.append({"name": "อื่นๆ", "watts": 100, "qty": 0, "hrs": 0.0})
             st.rerun()
     with add_col2: # ปุ่มล้างข้อมูลทั้งหมด
-        if st.button("🔄 ล้างข้อมูลทั้งหมด", use_container_width=True, help="รีเซ็ตจำนวนและชั่วโมงการใช้งานทั้งหมดเป็น 0 รวมถึงลบแถว 'อื่นๆ' ที่เพิ่มมา"):
+        if st.button("ล้างข้อมูลทั้งหมด", use_container_width=True, help="รีเซ็ตจำนวนและชั่วโมงการใช้งานทั้งหมดเป็น 0 รวมถึงลบแถว 'อื่นๆ' ที่เพิ่มมา"):
             # สร้างรายการเริ่มต้นใหม่ โดยตั้งค่า qty เป็น 0 (จำนวนเต็ม) และ hrs เป็น 0.0 (ทศนิยม)
             st.session_state.calc_appliances = [
                 {**app, 'qty': 0, 'hrs': 0.0} for app in initial_appliances
@@ -678,7 +707,7 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
             st.rerun()
     with add_col3: # ปุ่มลบรายการล่าสุด
         if len(st.session_state.calc_appliances) > 11:
-            if st.button("➖ ลบรายการล่าสุด", use_container_width=True):
+            if st.button("ลบรายการล่าสุด", use_container_width=True):
                 st.session_state.calc_appliances.pop()
                 st.rerun()
                 
@@ -688,7 +717,7 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
     total_daily_kwh = total_daily_kwh_manual if manual_monthly_kwh > 0 else total_daily_kwh_table
     
     st.divider()
-    st.subheader("📊 ผลการประเมินและขนาดที่แนะนำ")
+    st.subheader("ผลการประเมินและขนาดที่แนะนำ")
     
     # 1 kW แผงโซล่าร์เซลล์ ผลิตไฟได้ประมาณ 4 หน่วย (kWh) ต่อวัน
     recommended_kw = total_daily_kwh / 4.0
@@ -706,26 +735,26 @@ if page == "🧮 คำนวณโซล่าร์เซลล์ (ด้ว�
         rc1, rc2, rc3 = st.columns(3)
         with rc1:
             with st.container(border=True):
-                st.metric("⚡ การใช้ไฟกลางวันรวม", f"{total_daily_kwh:,.1f} หน่วย/วัน")
+                st.metric("การใช้ไฟกลางวันรวม", f"{total_daily_kwh:,.1f} หน่วย/วัน")
         with rc2:
             with st.container(border=True):
-                st.metric("🎯 ขนาดติดตั้งขั้นต่ำที่ต้องการ", f"{recommended_kw:,.2f} kW")
+                st.metric("ขนาดติดตั้งขั้นต่ำที่ต้องการ", f"{recommended_kw:,.2f} kW")
         with rc3:
             with st.container(border=True):
-                st.metric("📦 แพ็กเกจที่ครอบคลุม", f"{pkg_name}")
+                st.metric("แพ็กเกจที่ครอบคลุม", f"{pkg_name}")
         
-        st.success(f"✅ จากพฤติกรรมการใช้งานของคุณ ขอแนะนำให้พิจารณา **แพ็กเกจ {pkg_name}** (ราคาประเมิน ฿ {pkg_price:,.0f})")
+        st.success(f"จากพฤติกรรมการใช้งานของคุณ ขอแนะนำให้พิจารณา **แพ็กเกจ {pkg_name}** (ราคาประเมิน ฿ {pkg_price:,.0f})")
         
         st.info('''
-        **💡 หลักการคำนวณเบื้องต้น:**
+        **หลักการคำนวณเบื้องต้น:**
         - **สูตรคำนวณ:** `หน่วยไฟรวม (kWh) ÷ 4 ชั่วโมง (แสงแดดเฉลี่ย/วัน)`
         - ในประเทศไทย แผงโซล่าร์เซลล์ขนาด 1 kW สามารถผลิตกระแสไฟฟ้าได้เฉลี่ยวันละ 4 หน่วย (ครอบคลุม Loss แล้ว)
         - ตัวเลขนี้เป็นเพียงการประเมินเบื้องต้นสำหรับการติดระบบ On-Grid เพื่อลดค่าไฟกลางวันเท่านั้น
         ''')
     else:
-        st.warning("⚠️ กรุณาระบุจำนวนเครื่องใช้ไฟฟ้าและชั่วโมงการเปิดใช้งาน เพื่อเริ่มต้นการคำนวณ")
+        st.warning("กรุณาระบุจำนวนเครื่องใช้ไฟฟ้าและชั่วโมงการเปิดใช้งาน เพื่อเริ่มต้นการคำนวณ")
         
-    st.stop() # 🛑 บล็อกโค้ดตรงนี้เด็ดขาด ไม่ให้โค้ดส่วนค้นหาเป้าหมายหรือแผนที่ข้างล่างทำงานได้
+    st.stop() # บล็อกโค้ดตรงนี้เด็ดขาด ไม่ให้โค้ดส่วนค้นหาเป้าหมายหรือแผนที่ข้างล่างทำงานได้
 
 # โหลดและเตรียมข้อมูล (ใช้ Cache เพื่อไม่ให้ต้องโหลดไฟล์ใหม่ทุกครั้งที่ขยับเมาส์)
 @st.cache_data
@@ -743,7 +772,7 @@ if df is not None:
     # ==========================================
     # ส่วนที่ 1: หน้าแรก (Home Page)
     # ==========================================
-    if page == "🏠 หน้าแรก (ข้อมูลบริการและแพ็กเกจ)":
+    if page == "หน้าแรก (ข้อมูลบริการและแพ็กเกจ)":
         
         # ---------------- HERO BANNER ----------------
         st.markdown("""
@@ -751,9 +780,7 @@ if df is not None:
         
         <div class="hero-left">
         
-        <div class="hero-badge">
-        ☀️ AI SOLAR ANALYTICS
-        </div>
+        <div class="hero-badge">SOLAR ANALYTICS</div>
         
         <div class="hero-title">
         ระบบวิเคราะห์ผู้ใช้ไฟ
@@ -780,7 +807,7 @@ if df is not None:
         st.write("")
         
         # ---------------- ABOUT US ----------------
-        st.markdown("## 🏢 รู้จักกับเรา (About Us)")
+        st.markdown("## รู้จักกับเรา (About Us)")
         ab1, ab2 = st.columns([3, 2])
         with ab1:
             st.markdown("""
@@ -796,12 +823,11 @@ if df is not None:
             st.image("https://images.unsplash.com/photo-1592833159155-c62df1b65634?q=80&w=800&h=480&auto=format&fit=crop", use_container_width=True)
 
         # ---------------- WHY CHOOSE US ----------------
-        st.markdown("## ⭐ ทำไมต้องติดตั้งโซล่าร์เซลล์กับเรา?")
+        st.markdown("## ทำไมต้องติดตั้งโซล่าร์เซลล์กับเรา?")
         w1, w2, w3, w4 = st.columns(4)
         with w1:
             st.markdown("""
             <div class="card" style="padding: 20px;">
-                <div style="font-size: 40px;">👷‍♂️</div>
                 <h4 style="color: #1e3a8a; margin-top: 10px;">วิศวกรเชี่ยวชาญ</h4>
                 <p style="font-size: 14px; color: #64748b;">ออกแบบและติดตั้งโดยทีมวิศวกรไฟฟ้าที่มีใบอนุญาต ถูกต้องตามมาตรฐาน</p>
             </div>
@@ -809,7 +835,6 @@ if df is not None:
         with w2:
             st.markdown("""
             <div class="card" style="padding: 20px;">
-                <div style="font-size: 40px;">🛡️</div>
                 <h4 style="color: #1e3a8a; margin-top: 10px;">รับประกันยาวนาน</h4>
                 <p style="font-size: 14px; color: #64748b;">รับประกันแผง 25 ปี อินเวอร์เตอร์ 10 ปี และดูแลงานติดตั้งสูงสุด 2 ปี</p>
             </div>
@@ -817,7 +842,6 @@ if df is not None:
         with w3:
             st.markdown("""
             <div class="card" style="padding: 20px;">
-                <div style="font-size: 40px;">🤖</div>
                 <h4 style="color: #1e3a8a; margin-top: 10px;">วิเคราะห์ด้วย AI</h4>
                 <p style="font-size: 14px; color: #64748b;">ระบบประเมินจุดคุ้มทุนและเสนอแพ็กเกจที่แม่นยำจากบิลค่าไฟจริงของคุณ</p>
             </div>
@@ -825,7 +849,6 @@ if df is not None:
         with w4:
             st.markdown("""
             <div class="card" style="padding: 20px;">
-                <div style="font-size: 40px;">🏦</div>
                 <h4 style="color: #1e3a8a; margin-top: 10px;">รองรับสินเชื่อ</h4>
                 <p style="font-size: 14px; color: #64748b;">เป็นพันธมิตรกับธนาคารชั้นนำ ช่วยยื่นกู้และพร้อมเสนออัตราดอกเบี้ยพิเศษ</p>
             </div>
@@ -835,35 +858,35 @@ if df is not None:
         st.write("")
 
         # ---------------- SERVICES ----------------
-        st.markdown("## 🛠️ บริการที่คุณจะได้รับ (One-Stop Service)")
+        st.markdown("## บริการที่คุณจะได้รับ (One-Stop Service)")
         s1, s2 = st.columns(2)
         with s1:
-            st.info("✅ **บริการสำรวจและออกแบบฟรี**\n\nลงพื้นที่สำรวจหน้างาน ประเมินโครงสร้างหลังคา และใช้โปรแกรมจำลองทิศทางรับแสงที่ดีที่สุด")
-            st.info("✅ **อุปกรณ์ระดับ Tier 1**\n\nเลือกใช้แผงโซล่าร์เซลล์และอินเวอร์เตอร์คุณภาพสูงระดับโลก ที่ได้รับการยอมรับด้านความปลอดภัย")
+            st.info("**บริการสำรวจและออกแบบฟรี**\n\nลงพื้นที่สำรวจหน้างาน ประเมินโครงสร้างหลังคา และใช้โปรแกรมจำลองทิศทางรับแสงที่ดีที่สุด")
+            st.info("**อุปกรณ์ระดับ Tier 1**\n\nเลือกใช้แผงโซล่าร์เซลล์และอินเวอร์เตอร์คุณภาพสูงระดับโลก ที่ได้รับการยอมรับด้านความปลอดภัย")
         with s2:
-            st.info("✅ **ดำเนินการขออนุญาตฟรีทุกขั้นตอน**\n\nจัดการเอกสารกับ กฟภ./กฟน. และหน่วยงานราชการที่เกี่ยวข้องให้ทั้งหมดจนกว่าจะขนานไฟสำเร็จ")
-            st.info("✅ **บริการหลังการขายแบบมืออาชีพ**\n\nมีบริการล้างแผง ตรวจเช็คระบบไฟฟ้าประจำปี และตรวจสอบการทำงานผ่านแอปพลิเคชันออนไลน์ 24 ชม.")
+            st.info("**ดำเนินการขออนุญาตฟรีทุกขั้นตอน**\n\nจัดการเอกสารกับ กฟภ./กฟน. และหน่วยงานราชการที่เกี่ยวข้องให้ทั้งหมดจนกว่าจะขนานไฟสำเร็จ")
+            st.info("**บริการหลังการขายแบบมืออาชีพ**\n\nมีบริการล้างแผง ตรวจเช็คระบบไฟฟ้าประจำปี และตรวจสอบการทำงานผ่านแอปพลิเคชันออนไลน์ 24 ชม.")
 
         st.write("")
         st.divider()
         
         st.image("https://images.unsplash.com/photo-1497440001374-f26997328c1b?q=80&w=1200&h=300&auto=format&fit=crop&v=new", use_container_width=True)
-        st.subheader("📦 แพ็กเกจการติดตั้งมาตรฐาน (ราคาโดยประมาณ)")
+        st.subheader("แพ็กเกจการติดตั้งมาตรฐาน (ราคาโดยประมาณ)")
         
         # ฟังก์ชันสำหรับเปิดหน้าต่าง Modal/Dialog แสดงรายละเอียดแพ็กเกจแบบกว้าง
-        @st.dialog("📋 รายละเอียดแพ็กเกจการติดตั้ง", width="large")
+        @st.dialog("รายละเอียดแพ็กเกจการติดตั้ง", width="large")
         def show_details(pkg_name, size, price, details, models=None, panel_models=None):
             st.markdown(f"## {pkg_name} ({size})")
-            st.subheader(f"💵 ราคาเริ่มต้นประมาณ: {price}")
+            st.subheader(f"ราคาเริ่มต้นประมาณ: {price}")
             st.divider()
-            st.markdown("### 🔧 อุปกรณ์และบริการที่รวมในแพ็กเกจ:")
+            st.markdown("### อุปกรณ์และบริการที่รวมในแพ็กเกจ:")
             st.markdown(details)
             
             # --- ส่วนแสดงรูปภาพแผงโซล่าร์เซลล์ ---
             if panel_models:
                 st.divider()
-                st.markdown("### ☀️ เลือกรุ่นแผงโซล่าร์เซลล์ Tier 1:")
-                st.info("💡 **เกร็ดความรู้เรื่องราคา:** แผงโซล่าร์เซลล์ระดับ Tier 1 (เช่น Jinko, LONGi) จะมีต้นทุนมาตรฐานใกล้เคียงกัน บริษัทส่วนใหญ่จึงเปิดให้ลูกค้า **สามารถเลือกแบรนด์แผงโซล่าร์เซลล์ได้อิสระ โดยไม่ทำให้ราคาแพ็กเกจเปลี่ยนแปลง** (ราคาแพ็กเกจแบบครบชุด จะถูกกำหนดความถูก-แพง จาก 'แบรนด์อินเวอร์เตอร์' ที่ลูกค้าเลือกด้านล่างครับ)")
+                st.markdown("### เลือกรุ่นแผงโซล่าร์เซลล์ Tier 1:")
+                st.info("**เกร็ดความรู้เรื่องราคา:** แผงโซล่าร์เซลล์ระดับ Tier 1 (เช่น Jinko, LONGi) จะมีต้นทุนมาตรฐานใกล้เคียงกัน บริษัทส่วนใหญ่จึงเปิดให้ลูกค้า **สามารถเลือกแบรนด์แผงโซล่าร์เซลล์ได้อิสระ โดยไม่ทำให้ราคาแพ็กเกจเปลี่ยนแปลง** (ราคาแพ็กเกจแบบครบชุด จะถูกกำหนดความถูก-แพง จาก 'แบรนด์อินเวอร์เตอร์' ที่ลูกค้าเลือกด้านล่างครับ)")
                 p_cols = st.columns(len(panel_models))
                 for i, p_model in enumerate(panel_models):
                     with p_cols[i]:
@@ -874,22 +897,21 @@ if df is not None:
                                     with img_cols[1]:
                                         st.image(p_model['image'], use_container_width=True)
                                 else:
-                                    st.warning(f"⚠️ ไม่พบรูปภาพ: {p_model['image']}")
+                                    st.warning(f"ไม่พบรูปภาพ: {p_model['image']}")
                             st.markdown(f"""
                             <div style="background-color: #F3F4F6; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 2px dashed #D8B4FE;">
-                                <div style="font-size: 40px; margin-bottom: 5px;">🔆</div>
                                 <div style="font-size: 16px; font-weight: bold; color: #4C1D95;">{p_model['name']}</div>
                                 <div style="color: #6B7280; font-size: 12px; margin-top: 5px;">แผงคุณภาพสูง (Tier 1)</div>
                                 <div style="font-size: 14px; color: #7C3AED; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #F3E8FF; border-radius: 8px;">รวมอยู่ในราคาแพ็กเกจแล้ว</div>
                             </div>
                             """, unsafe_allow_html=True)
                             if st.button(f"เลือกแผง {p_model['name']}", key=f"select_panel_{pkg_name}_{i}", use_container_width=True):
-                                st.success(f"✅ คุณสนใจแผงโซล่าร์เซลล์รุ่น {p_model['name']} (รวมอยู่ในราคาแพ็กเกจด้านล่างแล้ว ไม่มีบวกเพิ่ม)")
+                                st.success(f"คุณสนใจแผงโซล่าร์เซลล์รุ่น {p_model['name']} (รวมอยู่ในราคาแพ็กเกจด้านล่างแล้ว ไม่มีบวกเพิ่ม)")
 
             # --- ส่วนแสดงรูปภาพอินเวอร์เตอร์ / มิตเตอร์แต่ละรุ่น ---
             if models:
                 st.divider()
-                st.markdown("### 🔌 เลือกแบรนด์อินเวอร์เตอร์ (ราคานี้รวมแผงโซลาร์เซลล์ อินเวอร์เตอร์ สมาร์ทมิเตอร์ และอุปกรณ์ติดตั้งครบชุดแล้ว):")
+                st.markdown("### เลือกแบรนด์อินเวอร์เตอร์ (ราคานี้รวมแผงโซลาร์เซลล์ อินเวอร์เตอร์ สมาร์ทมิเตอร์ และอุปกรณ์ติดตั้งครบชุดแล้ว):")
                 cols = st.columns(len(models))
                 for i, model in enumerate(models):
                     with cols[i]:
@@ -900,19 +922,18 @@ if df is not None:
                                     with img_cols[1]:
                                         st.image(model['image'], use_container_width=True)
                                 else:
-                                    st.warning(f"⚠️ ไม่พบรูปภาพ: {model['image']}")
+                                    st.warning(f"ไม่พบรูปภาพ: {model['image']}")
                             st.markdown(f"""
-                            <div style="background-color: #F8FAFC; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 2px dashed #93C5FD;">
-                                <div style="font-size: 40px; margin-bottom: 5px;">⚡</div>
-                                <div style="font-size: 16px; font-weight: bold; color: #0369A1;">เซ็ตอุปกรณ์ {model['name']}</div>
-                                <div style="font-size: 14px; color: #0284C7; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #E0F2FE; border-radius: 8px;">ราคารวมทั้งแพ็กเกจ: {model['price']}</div>
+                                <div style="background-color: #F8FAFC; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 2px dashed #93C5FD;">
+                                    <div style="font-size: 16px; font-weight: bold; color: #0369A1;">เซ็ตอุปกรณ์ {model['name']}</div>
+                                    <div style="font-size: 14px; color: #0284C7; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #E0F2FE; border-radius: 8px;">ราคารวมทั้งแพ็กเกจ: {model['price']}</div>
                             </div>
                             """, unsafe_allow_html=True)
                             if st.button(f"สนใจแพ็กเกจ {model['name']}", key=f"select_{pkg_name}_{i}", use_container_width=True):
-                                st.success(f"✅ คุณสนใจแพ็กเกจแบบครบชุด เซ็ต {model['name']} ในราคารวม {model['price']}")
+                                st.success(f"คุณสนใจแพ็กเกจแบบครบชุด เซ็ต {model['name']} ในราคารวม {model['price']}")
 
             st.divider()
-            st.info("💡 หมายเหตุ: ราคาอาจมีการเปลี่ยนแปลงขึ้นอยู่กับการประเมินหน้างาน โครงสร้างหลังคา และรุ่นอุปกรณ์ที่เลือก")
+            st.info("หมายเหตุ: ราคาอาจมีการเปลี่ยนแปลงขึ้นอยู่กับการประเมินหน้างาน โครงสร้างหลังคา และรุ่นอุปกรณ์ที่เลือก")
 
         # รายชื่อแผงโซล่าร์เซลล์มาตรฐาน (Tier 1) ที่ใช้กับทุกแพ็กเกจ
         panel_models_std = [ 
@@ -926,12 +947,12 @@ if df is not None:
                 st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #FFD6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #3B0764;">🥉 แพ็กเกจ</h3>
+                    <h3 style="margin: 0; color: #3B0764;">แพ็กเกจ</h3>
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">3 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏠 เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\n💵 ราคารวมติดตั้งเริ่มต้น: **135,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
-                if st.button("🔍 ดูรายละเอียด", key="btn_s", use_container_width=True):
+                st.markdown("เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\nราคารวมติดตั้งเริ่มต้น: **135,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
+                if st.button("ดูรายละเอียด", key="btn_s", use_container_width=True):
                     models_s = [
                         {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": get_image_path("SUN2000-3KTL-L1..webp", "package3kW")},
                         {"name": "Growatt MIN 3000TL-X", "price": "135,000 บาท", "image": get_image_path("Growatt-MIN-3000-TL-X.webp", "package3kW")}
@@ -942,12 +963,12 @@ if df is not None:
                 st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #E7C6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #3B0764;">🥈 แพ็กเกจ</h3>
+                    <h3 style="margin: 0; color: #3B0764;">แพ็กเกจ</h3>
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">5 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏡 เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\n💵 ราคารวมติดตั้งเริ่มต้น: **189,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
-                if st.button("🔍 ดูรายละเอียด", key="btn_m", use_container_width=True):
+                st.markdown("เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\nราคารวมติดตั้งเริ่มต้น: **189,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
+                if st.button("ดูรายละเอียด", key="btn_m", use_container_width=True):
                     models_m = [
                         {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": get_image_path("SUN2000-5KTL-L1-01.webp", "package3kW")},
                         {"name": "Growatt MIN 5000TL-X", "price": "189,000 บาท", "image": get_image_path("growatt-min-5000tl-x.jpg", "package3kW")}
@@ -958,12 +979,12 @@ if df is not None:
                 st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #C8B6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #3B0764;">🥇 แพ็กเกจ</h3>
+                    <h3 style="margin: 0; color: #3B0764;">แพ็กเกจ</h3>
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">10 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏢 เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\n💵 ราคารวมติดตั้งเริ่มต้น: **315,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
-                if st.button("🔍 ดูรายละเอียด", key="btn_l", use_container_width=True):
+                st.markdown("เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\nราคารวมติดตั้งเริ่มต้น: **315,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
+                if st.button("ดูรายละเอียด", key="btn_l", use_container_width=True):
                     models_l = [
                         {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": get_image_path("SUN2000-10KTL-M1-01.webp", "package3kW")},
                         {"name": "Growatt MOD 10KTL3-X", "price": "315,000 บาท", "image": get_image_path("growatt-mod-10ktl3-x.jpg", "package3kW")}
@@ -977,12 +998,12 @@ if df is not None:
                 st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #B8C0FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #3B0764;">💎 แพ็กเกจ</h3>
+                    <h3 style="margin: 0; color: #3B0764;">แพ็กเกจ</h3>
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">15 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏭 เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\n💵 ราคารวมติดตั้งเริ่มต้น: **439,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
-                if st.button("🔍 ดูรายละเอียด", key="btn_xl", use_container_width=True):
+                st.markdown("เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\nราคารวมติดตั้งเริ่มต้น: **439,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
+                if st.button("ดูรายละเอียด", key="btn_xl", use_container_width=True):
                     models_xl = [
                         {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": get_image_path("Huawei-SUN2000-15KTL-M2.jpg", "package3kW")},
                         {"name": "Growatt MID 15KTL3-X", "price": "439,000 บาท", "image": get_image_path("Growatt MID 15KTL3-X.webp", "package3kW")}
@@ -993,12 +1014,12 @@ if df is not None:
                 st.image(get_image_path("Jiinko_550w.jpg", "package3kW"), use_container_width=True)
                 st.markdown("""
                 <div style="background-color: #BBD0FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: #3B0764;">👑 แพ็กเกจ</h3>
+                    <h3 style="margin: 0; color: #3B0764;">แพ็กเกจ</h3>
                     <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">>15 kW</span>
                 </div>
                 """, unsafe_allow_html=True)
-                st.markdown("🏭 เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\n💵 ราคารวมติดตั้งเริ่มต้น: **500,000 บาทขึ้นไป**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
-                if st.button("🔍 ดูรายละเอียด", key="btn_xxl", use_container_width=True):
+                st.markdown("เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\nราคารวมติดตั้งเริ่มต้น: **500,000 บาทขึ้นไป**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
+                if st.button("ดูรายละเอียด", key="btn_xxl", use_container_width=True):
                     models_xxl = [
                         {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": get_image_path("SUN2000-30KTL-M3.2.webp", "package3kW")},
                         {"name": "Growatt MID 30KTL3-X", "price": "520,000 บาท", "image": get_image_path("Growatt MID 30KTL3-X.webp", "package3kW")},
@@ -1009,26 +1030,26 @@ if df is not None:
         st.divider()
         
         # ---------------- NEWS & ARTICLES ----------------
-        st.markdown("## 📰 ข่าวสารและสาระน่ารู้เกี่ยวกับโซล่าร์เซลล์")
+        st.markdown("## ข่าวสารและสาระน่ารู้เกี่ยวกับโซล่าร์เซลล์")
         n1, n2, n3 = st.columns(3)
         with n1:
             with st.container(border=True):
                 st.markdown('<a href="https://peasolar.pea.co.th/" target="_blank"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
-                st.markdown("#### 🌞 กฟภ. หนุนประชาชนติดตั้ง Solar Rooftop")
+                st.markdown("#### กฟภ. หนุนประชาชนติดตั้ง Solar Rooftop")
                 st.markdown("การไฟฟ้าส่วนภูมิภาค (PEA) ส่งเสริมให้ประชาชนและภาคธุรกิจติดตั้งระบบผลิตไฟฟ้าจากพลังงานแสงอาทิตย์บนหลังคา เพื่อลดภาระค่าใช้จ่ายระยะยาว...")
                 st.write("")
                 st.link_button("อ่านเพิ่มเติม", "https://peasolar.pea.co.th/", use_container_width=True)
         with n2:
             with st.container(border=True):
                 st.markdown('<a href="https://www.thaigov.go.th/" target="_blank"><img src="https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
-                st.markdown("#### 📉 รัฐส่งเสริมโซล่าเซลล์ราคาประหยัด")
+                st.markdown("#### รัฐส่งเสริมโซล่าเซลล์ราคาประหยัด")
                 st.markdown("รัฐบาลเตรียมลดภาระค่าไฟฟ้าประชาชน ส่งเสริมใช้โซล่าเซลล์ราคาถูก พร้อมพัฒนาอินเวอร์เตอร์และปรับกฎหมายให้เข้าถึงพลังงานสะอาดได้ง่ายขึ้น...")
                 st.write("")
                 st.link_button("อ่านเพิ่มเติม", "https://www.thaigov.go.th/", use_container_width=True)
         with n3:
             with st.container(border=True):
                 st.markdown('<a href="https://www.scb.co.th/th/personal-banking/loans/home-loans/green-energy-loan.html" target="_blank"><img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=600&h=350&auto=format&fit=crop" class="news-img"></a>', unsafe_allow_html=True)
-                st.markdown("#### ⚡ ธนาคารเร่งออกสินเชื่อ Green Energy")
+                st.markdown("#### ธนาคารเร่งออกสินเชื่อ Green Energy")
                 st.markdown("หลายธนาคารชั้นนำ เปิดตัวสินเชื่อติดตั้งโซลาร์เซลล์ทั้งในบ้านและธุรกิจ ด้วยเงื่อนไขยืดหยุ่นและอัตราดอกเบี้ยพิเศษเพื่อลดรายจ่ายระยะยาว...")
                 st.write("")
                 st.link_button("อ่านเพิ่มเติม", "https://www.scb.co.th/th/personal-banking/loans/home-loans/green-energy-loan.html", use_container_width=True)
@@ -1037,7 +1058,7 @@ if df is not None:
         st.write("")
         
         # ---------------- CONTACT US ----------------
-        st.markdown("## 📞 สนใจติดตั้ง / ติดต่อเรา (Contact Us)")
+        st.markdown("## สนใจติดตั้ง / ติดต่อเรา (Contact Us)")
         st.markdown("ทีมวิศวกรของเราพร้อมให้คำปรึกษาและประเมินหน้างานเบื้องต้น **ฟรี!** ไม่มีค่าใช้จ่าย ติดต่อเราได้ผ่านช่องทางด้านล่างนี้")
         
         c_contact1, c_contact2, c_contact3, c_contact4 = st.columns(4)
@@ -1057,13 +1078,15 @@ if df is not None:
                 st.link_button("ทักแชท", "https://facebook.com/", use_container_width=True)
         with c_contact3:
             with st.container(border=True):
-                st.markdown("<div style='text-align:center; font-size: 40px; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>📱</div>", unsafe_allow_html=True)
+                phone_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45"><path fill="#ea580c" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>'''
+                st.markdown(f"<div style='text-align:center; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>{phone_svg}</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #ea580c; font-weight: bold;'>โทรศัพท์ (Hotline)</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>02-123-4567</div>", unsafe_allow_html=True)
                 st.link_button("โทรติดต่อ", "tel:021234567", use_container_width=True)
         with c_contact4:
             with st.container(border=True):
-                st.markdown("<div style='text-align:center; font-size: 40px; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>📧</div>", unsafe_allow_html=True)
+                email_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45"><path fill="#6d28d9" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>'''
+                st.markdown(f"<div style='text-align:center; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>{email_svg}</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #6d28d9; font-weight: bold;'>อีเมล (Email)</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>hello@solarjoy.com</div>", unsafe_allow_html=True)
                 st.link_button("ส่งอีเมล", "mailto:hello@solarjoy.com", use_container_width=True)
@@ -1075,7 +1098,6 @@ if df is not None:
         st.markdown("""
         <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #cbd5e1; padding: 40px 20px; border-radius: 24px; margin-top: 60px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px;">
-                <span style="font-size: 28px;">☀️</span>
                 <h2 style="color: white; margin: 0; font-weight: 700;">SolarJoy Energy</h2>
             </div>
             <p style="font-size: 15px; margin-bottom: 25px; color: #94a3b8; max-width: 500px; margin-left: auto; margin-right: auto;">
@@ -1090,7 +1112,7 @@ if df is not None:
             </div>
             <hr style="border: none; border-top: 1px solid #334155; margin: 0 auto 20px auto; max-width: 800px;">
             <p style="font-size: 13px; color: #64748b; margin: 0;">
-                &copy; 2026 Solar Analytics Platform. All rights reserved. | พัฒนาด้วย 💙 เพื่อพลังงานสะอาด
+                &copy; 2026 Solar Analytics Platform. All rights reserved. | พัฒนาด้วยความใส่ใจ เพื่อพลังงานสะอาด
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -1098,7 +1120,7 @@ if df is not None:
         st.stop() # หยุดการทำงานสคริปต์ตรงนี้ เพื่อไม่ให้แสดงผลหน้าอื่นซ้อนกัน
 
     # --- Sidebar สำหรับฟิลเตอร์ (ตัวกรอง) ---
-    st.sidebar.header("🔍 ตัวกรองข้อมูล")
+    st.sidebar.header("ตัวกรองข้อมูล")
     selected_types = st.sidebar.multiselect(
         "เลือกประเภทผู้ใช้งานเป้าหมาย",
         options=df['user_type_name'].unique(),
@@ -1127,39 +1149,39 @@ if df is not None:
     # ==========================================
     # ส่วนที่ 2: หน้าแดชบอร์ดวิเคราะห์ภาพรวม
     # ==========================================
-    if page == "📊 แดชบอร์ดวิเคราะห์":
-        st.title("☀️ แดชบอร์ดวิเคราะห์พฤติกรรมการใช้ไฟฟ้า")
+    if page == "แดชบอร์ดวิเคราะห์":
+        st.title("แดชบอร์ดวิเคราะห์พฤติกรรมการใช้ไฟฟ้า")
         st.markdown("*(สำหรับวิเคราะห์ภาพรวมการใช้ไฟฟ้า แนวโน้ม และพฤติกรรมของแต่ละกลุ่มลูกค้า)*")
         
         # --- KPI Section ---
-        st.subheader("📊 สรุปภาพรวม (KPIs) ของกลุ่มที่เลือก")
+        st.subheader("สรุปภาพรวม (KPIs) ของกลุ่มที่เลือก")
         col1, col2, col3 = st.columns(3)
         
         total_kwh = filtered_df['kwh_total'].sum()
         total_amt = filtered_df['amt_invoice'].sum()
         avg_rate = total_amt / total_kwh if total_kwh > 0 else 0
         
-        col1.metric("⚡ ปริมาณการใช้ไฟรวม (kWh)", f"{total_kwh:,.2f} หน่วย")
-        col2.metric("💰 ค่าไฟฟ้ารวม (บาท)", f"฿ {total_amt:,.2f}")
-        col3.metric("📈 ค่าไฟเฉลี่ยต่อหน่วย", f"฿ {avg_rate:,.2f} / kWh")
+        col1.metric("ปริมาณการใช้ไฟรวม (kWh)", f"{total_kwh:,.2f} หน่วย")
+        col2.metric("ค่าไฟฟ้ารวม (บาท)", f"฿ {total_amt:,.2f}")
+        col3.metric("ค่าไฟเฉลี่ยต่อหน่วย", f"฿ {avg_rate:,.2f} / kWh")
         
         st.divider()
         
         # --- ข้อมูลพื้นฐานสำหรับวิเคราะห์กลุ่มลูกค้า ---
-        st.subheader("👥 ข้อมูลพื้นฐานสำหรับวิเคราะห์กลุ่มลูกค้า")
+        st.subheader("ข้อมูลพื้นฐานสำหรับวิเคราะห์กลุ่มลูกค้า")
         st.markdown("*(ใช้ดูพฤติกรรมรายบุคคล/รายบิล เพื่อประเมินว่าแต่ละรายใช้ไฟเยอะพอที่จะคุ้มทุนในการเสนอโปรเจกต์หรือไม่)*")
         
         info_col1, info_col2, info_col3 = st.columns(3)
         
         if customer_col:
             unique_customers = filtered_df[customer_col].nunique()
-            info_col1.metric("🏠 จำนวนครัวเรือนรวม (ครัวเรือน)", f"{unique_customers:,}")
+            info_col1.metric("จำนวนครัวเรือนรวม (ครัวเรือน)", f"{unique_customers:,}")
             
             avg_kwh_per_customer = total_kwh / unique_customers if unique_customers > 0 else 0
-            info_col2.metric("⚡ การใช้ไฟเฉลี่ยต่อครัวเรือน", f"{avg_kwh_per_customer:,.2f} kWh")
+            info_col2.metric("การใช้ไฟเฉลี่ยต่อครัวเรือน", f"{avg_kwh_per_customer:,.2f} kWh")
             
             avg_amt_per_customer = total_amt / unique_customers if unique_customers > 0 else 0
-            info_col3.metric("💸 ค่าไฟเฉลี่ยต่อครัวเรือน", f"฿ {avg_amt_per_customer:,.2f}")
+            info_col3.metric("ค่าไฟเฉลี่ยต่อครัวเรือน", f"฿ {avg_amt_per_customer:,.2f}")
             
             # ใช้ภาษาอังกฤษใน agg() ก่อน เพื่อป้องกันปัญหาคอลัมน์หายจาก Keyword Arguments ภาษาไทย
             customer_group_summary = filtered_df.groupby('user_type_name').agg(
@@ -1177,13 +1199,13 @@ if df is not None:
             customer_group_summary['ค่าไฟเฉลี่ยต่อครัวเรือน_บาท'] = customer_group_summary['ค่าไฟรวม_บาท'] / customer_group_summary['จำนวนครัวเรือน']
         else:
             total_bills = len(filtered_df)
-            info_col1.metric("📄 จำนวนบิล/รายการรวม", f"{total_bills:,}")
+            info_col1.metric("จำนวนบิล/รายการรวม", f"{total_bills:,}")
             
             avg_kwh_per_bill = total_kwh / total_bills if total_bills > 0 else 0
-            info_col2.metric("⚡ การใช้ไฟเฉลี่ยต่อบิล", f"{avg_kwh_per_bill:,.2f} kWh")
+            info_col2.metric("การใช้ไฟเฉลี่ยต่อบิล", f"{avg_kwh_per_bill:,.2f} kWh")
             
             avg_amt_per_bill = total_amt / total_bills if total_bills > 0 else 0
-            info_col3.metric("💸 ค่าไฟเฉลี่ยต่อบิล", f"฿ {avg_amt_per_bill:,.2f}")
+            info_col3.metric("ค่าไฟเฉลี่ยต่อบิล", f"฿ {avg_amt_per_bill:,.2f}")
             
             customer_group_summary = filtered_df.groupby('user_type_name').agg(
                 count_bills=('kwh_total', 'count'),
@@ -1236,7 +1258,7 @@ if df is not None:
 
         # --- Charts Section ---
 
-        st.subheader("📅 เปรียบเทียบหน่วยการใช้ไฟฟ้า ปี 2025 - 2026 (ม.ค. - มี.ค.)")
+        st.subheader("เปรียบเทียบหน่วยการใช้ไฟฟ้า ปี 2025 - 2026 (ม.ค. - มี.ค.)")
         st.markdown("*(ใช้เปรียบเทียบการเปลี่ยนแปลงของปริมาณการใช้ไฟฟ้าในช่วงเดือนมกราคมถึงมีนาคมของปี 2025 และ 2026)*")
         
         # กรองข้อมูลเฉพาะปี 2025-2026 และเดือน 01-03
@@ -1266,7 +1288,7 @@ if df is not None:
             st.plotly_chart(fig_trend, use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
-            st.subheader("📈 ตารางวิเคราะห์การเติบโต (Year-over-Year)")
+            st.subheader("ตารางวิเคราะห์การเติบโต (Year-over-Year)")
             st.markdown("*(เปรียบเทียบจำนวนบ้านและการใช้ไฟของปี 2025 และ 2026)*")
             
             # สร้าง Pivot Table เพื่อเทียบปี 2025 กับ 2026
@@ -1300,13 +1322,13 @@ if df is not None:
                 
                 st.dataframe(display_growth.style.format(format_growth), use_container_width=True)
             else:
-                st.info("ℹ️ ข้อมูลไม่เพียงพอสำหรับการเปรียบเทียบการเติบโตระหว่างปี 2025 และ 2026 (อาจมีข้อมูลเพียงปีเดียว)")
+                st.info("ข้อมูลไม่เพียงพอสำหรับการเปรียบเทียบการเติบโตระหว่างปี 2025 และ 2026 (อาจมีข้อมูลเพียงปีเดียว)")
         else:
-            st.info("ℹ️ ยังไม่มีข้อมูลการใช้ไฟของเดือน มกราคม-มีนาคม ในปี 2025 และ 2026 ในระบบ")
+            st.info("ยังไม่มีข้อมูลการใช้ไฟของเดือน มกราคม-มีนาคม ในปี 2025 และ 2026 ในระบบ")
 
         # --- สร้างกราฟแท่งความเคลื่อนไหวรายเดือน (New vs Lost) ---
         st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader(" วิเคราะห์การเพิ่มขึ้นและลดลงของผู้ใช้ไฟ (New vs Lost Users)")
+        st.subheader("วิเคราะห์การเพิ่มขึ้นและลดลงของผู้ใช้ไฟ (New vs Lost Users)")
         
         if customer_col:
             temp_df = filtered_df[[customer_col, 'year', 'month']].copy()
@@ -1357,7 +1379,7 @@ if df is not None:
             
             if not comparison_df.empty:
                 # 4. ส่วนการสร้างกราฟ Interactive
-                st.write("**📊 วิเคราะห์การเพิ่มขึ้นและลดลงของผู้ใช้ไฟ (Interactive)**")
+                st.write("**วิเคราะห์การเพิ่มขึ้นและลดลงของผู้ใช้ไฟ (Interactive)**")
                 
                 # แปลงค่า Lost เป็นค่าบวก (Absolute) เพื่อให้นำเสนอแท่งกราฟในแกนบวกคู่กัน
                 comparison_df["ผู้ใช้ที่หายไป (Lost)"] = comparison_df["ผู้ใช้ที่หายไป (Lost)"].abs()
@@ -1398,9 +1420,9 @@ if df is not None:
                 # แสดงผลกราฟใน Streamlit
                 st.plotly_chart(fig, use_container_width=True)
 
-                st.info("💡 **ผู้ใช้ใหม่** คือคนที่ไม่เคยเห็นรหัสนี้มาก่อนในข้อมูลเดือนก่อนหน้า | **ผู้ใช้ที่หายไป** คือคนที่มีชื่อเดือนที่แล้วแต่ไม่มีในเดือนนี้")
+                st.info("**ผู้ใช้ใหม่** คือคนที่ไม่เคยเห็นรหัสนี้มาก่อนในข้อมูลเดือนก่อนหน้า | **ผู้ใช้ที่หายไป** คือคนที่มีชื่อเดือนที่แล้วแต่ไม่มีในเดือนนี้")
             else:
-                st.info("ℹ️ ข้อมูลไม่เพียงพอสำหรับสร้างกราฟความเคลื่อนไหวรายเดือน")
+                st.info("ข้อมูลไม่เพียงพอสำหรับสร้างกราฟความเคลื่อนไหวรายเดือน")
         else:
             st.warning("ไม่สามารถสร้างกราฟความเคลื่อนไหวได้ เนื่องจากไม่พบคอลัมน์หมายเลขผู้ใช้ไฟ")
 
@@ -1409,7 +1431,7 @@ if df is not None:
         col_pie1, col_pie2 = st.columns(2)
         
         with col_pie1:
-            st.subheader("⚡ สัดส่วนการใช้ไฟ (kWh)")
+            st.subheader("สัดส่วนการใช้ไฟ (kWh)")
             st.markdown("*(ใช้ดูว่ากลุ่มลูกค้าไหนมีการใช้พลังงานไฟฟ้าเยอะที่สุด)*")
             type_summary_kwh = filtered_df.groupby('user_type_name')['kwh_total'].sum().reset_index()
             fig_pie_kwh = px.pie(type_summary_kwh, values='kwh_total', names='user_type_name', 
@@ -1417,7 +1439,7 @@ if df is not None:
             st.plotly_chart(fig_pie_kwh, use_container_width=True)
             
         with col_pie2:
-            st.subheader("🏢 สัดส่วนค่าไฟ (บาท)")
+            st.subheader("สัดส่วนค่าไฟ (บาท)")
             st.markdown("*(ใช้หา Target Group ว่ากลุ่มไหนคือลูกค้ารายใหญ่ที่สุดที่ควรเข้าไปคุยเสนอโปรเจกต์)*")
             type_summary_amt = filtered_df.groupby('user_type_name')['amt_invoice'].sum().reset_index()
             fig_pie_amt = px.pie(type_summary_amt, values='amt_invoice', names='user_type_name', 
@@ -1430,7 +1452,7 @@ if df is not None:
     # ==========================================
     # ส่วนที่ 3: หน้าค้นหาและวิเคราะห์ลูกค้าเป้าหมาย
     # ==========================================
-    if page == "ค้นหาลูกค้าเป้าหมาย":
+    if page == "ค้นหาลูกค้าเป้าหมาย" or page == "ค้นหาลูกค้าเป้าหมาย":
         st.title("ค้นหาและวิเคราะห์กลุ่มลูกค้าเป้าหมาย")
         st.markdown("*(เจาะลึกพฤติกรรมรายบุคคล ดูตำแหน่งแผนที่ และตารางประเมินความคุ้มค่าแบบ Real-Time)*")
         
@@ -1509,23 +1531,23 @@ if df is not None:
                 
                 def eval_map_status(row):
                     if row['payback_years'] > 7:
-                        return "❌ ยังไม่คุ้มทุน"
+                        return "ยังไม่คุ้มทุน"
                     
                     avg_bill = row['ค่าไฟเฉลี่ย/เดือน']
                     u_type = str(row.get('user_type', ''))
                     
                     if "ชั่วคราว" in u_type:
-                        return "❌ ยังไม่คุ้มทุน"
+                        return "ยังไม่คุ้มทุน"
                     
                     if "กิจการขนาดใหญ่" in u_type:
-                        if avg_bill >= 30000: return "🔵 ควรติด (กิจการขนาดใหญ่)"
+                        if avg_bill >= 30000: return "ควรติด (กิจการขนาดใหญ่)"
                     elif "กิจการขนาดกลาง" in u_type:
-                        if avg_bill >= 15000: return "🟣 ควรติด (กิจการขนาดกลาง)"
+                        if avg_bill >= 15000: return "ควรติด (กิจการขนาดกลาง)"
                     else:
                         # บ้านอยู่อาศัย, กิจการขนาดเล็ก, กิจการเฉพาะอย่าง หรืออื่นๆ
-                        if avg_bill >= 3000: return "🟢 ควรติด (บ้าน/ขนาดเล็ก)"
+                        if avg_bill >= 3000: return "ควรติด (บ้าน/ขนาดเล็ก)"
                         
-                    return "❌ ยังไม่คุ้มทุน"
+                    return "ยังไม่คุ้มทุน"
                     
                 map_summary['สถานะ'] = map_summary.apply(eval_map_status, axis=1)
                 
@@ -1536,14 +1558,14 @@ if df is not None:
                 map_summary['คืนทุน (ปี)'] = np.round(payback_years, 1)
 
                 # กรองให้เหลือเฉพาะเป้าหมายที่ควรเสนอโครงการ (ควรติดโซล่าร์เซลล์)
-                map_summary = map_summary[map_summary['สถานะ'] != "❌ ยังไม่คุ้มทุน"]
+                map_summary = map_summary[map_summary['สถานะ'] != "ยังไม่คุ้มทุน"]
 
                 map_df = map_summary
                 color_col = 'สถานะ'
                 color_map = {
-                    "🟢 ควรติด (บ้าน/ขนาดเล็ก)": "#00E676", # สีเขียว
-                    "🟣 ควรติด (กิจการขนาดกลาง)": "#D500F9", # สีม่วง
-                    "🔵 ควรติด (กิจการขนาดใหญ่)": "#2979FF"  # สีน้ำเงิน
+                    "ควรติด (บ้าน/ขนาดเล็ก)": "#00E676", 
+                    "ควรติด (กิจการขนาดกลาง)": "#D500F9", 
+                    "ควรติด (กิจการขนาดใหญ่)": "#2979FF"  
                 }
                 hover_data = ["ประเภทผู้ใช้ไฟ", "ค่าไฟก่อนติด (บาท/เดือน)", "ค่าไฟหลังติด (บาท/เดือน)", "คืนทุน (ปี)"]
 
@@ -1621,7 +1643,7 @@ if df is not None:
         def eval_quick_status(row):
             avg_amt = row['avg_amt']
             avg_kwh = row['avg_kwh']
-            if pd.isna(avg_kwh) or avg_kwh <= 0 or pd.isna(avg_amt) or avg_amt < 2000: 
+            if pd.isna(avg_kwh) or avg_kwh <= 0 or pd.isna(avg_amt) or avg_amt < 3000: 
                 return False
             
             u_type = str(row['user_type'])
@@ -1654,10 +1676,10 @@ if df is not None:
                 if cust_no == "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --":
                     return cust_no
                 if cust_no in recommended_customers:
-                    return f"✅ {cust_no} (ควรติด)"
+                    return f"{cust_no} (ควรติด)"
                 elif cust_no in not_recommended_customers:
-                    return f"❌ {cust_no} (ยังไม่คุ้ม)"
-                return f"⚪ {cust_no} (ไม่มีข้อมูล)"
+                    return f"{cust_no} (ยังไม่คุ้ม)"
+                return f"{cust_no} (ไม่มีข้อมูล)"
 
             # ใช้ selectbox ซึ่งสามารถคลิกแล้วพิมพ์ค้นหาตัวเลขได้เลย
             selected_customer = st.selectbox(
@@ -1754,12 +1776,12 @@ if df is not None:
                 
                 payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
                 
-                if cust_avg_amt >= 2000 and payback <= 7:
-                    status_text = "✅ ควรติดโซล่าร์เซลล์ (คุ้มทุนเหมาะสม)"
+                if cust_avg_amt >= 3000 and payback <= 7:
+                    status_text = "ควรติดโซล่าร์เซลล์ (คุ้มทุนเหมาะสม)"
                     status_color = "#dcfce7"
                     status_font = "#166534"
                 else:
-                    status_text = "❌ ยังไม่แนะนำ (ใช้ไฟน้อยไปหรือคืนทุนช้า)"
+                    status_text = "ยังไม่แนะนำ (ใช้ไฟน้อยไปหรือคืนทุนช้า)"
                     status_color = "#fee2e2"
                     status_font = "#991b1b"
                 
@@ -1776,7 +1798,7 @@ if df is not None:
                         st.markdown(f"<div style='text-align:center'><b>ระยะเวลาคืนทุน</b><br><span style='font-size: 1.2em; color: #b45309;'>{payback:,.1f} ปี</span><br>(ลงทุน ฿ {investment:,.0f} | กำไร ฿ {company_profit:,.0f})</div>", unsafe_allow_html=True)
                 with dcol4:
                     with st.container(border=True):
-                        st.markdown(f"<div style='text-align:center'><b>สภาพแวดล้อม (Real-Time)</b><br><span style='font-size: 0.75em; color: #6b7280;'>📍 พิกัด: {lat:.4f}, {lon:.4f}</span><br><span style='font-size: 0.9em; color: #6b7280;'>ฝุ่น PM2.5: {pm25:.1f} μg/m³<br>ความเข้มแสง: {100 - cloud:.0f}%</span></div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='text-align:center'><b>สภาพแวดล้อม (Real-Time)</b><br><span style='font-size: 0.75em; color: #6b7280;'>พิกัด: {lat:.4f}, {lon:.4f}</span><br><span style='font-size: 0.9em; color: #6b7280;'>ฝุ่น PM2.5: {pm25:.1f} μg/m³<br>ความเข้มแสง: {100 - cloud:.0f}%</span></div>", unsafe_allow_html=True)
 
                 st.markdown(f'''
                 <div style="background-color: {status_color}; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
@@ -2071,11 +2093,11 @@ if df is not None:
                                                  cust_summary['investment'] / (cust_summary['monthly_savings'] * 12),
                                                  99)
         
-        # เงื่อนไขควรติด: ค่าไฟเฉลี่ย >= 2000 และคืนทุน <= 7 ปี (และต้องไม่ใช่ไฟฟ้าชั่วคราว)
+        # เงื่อนไขควรติด: ค่าไฟเฉลี่ย >= 3000 และคืนทุน <= 7 ปี (และต้องไม่ใช่ไฟฟ้าชั่วคราว)
         cust_summary['should_install'] = np.where(
-            (cust_summary['avg_amt_per_month'] >= 2000) & (cust_summary['payback_years'] <= 7) & (~cust_summary['user_type_name'].str.contains('ชั่วคราว', na=False)),
-            "✅ ควรติด",
-            "❌ ยังไม่คุ้ม"
+            (cust_summary['avg_amt_per_month'] >= 3000) & (cust_summary['payback_years'] <= 7) & (~cust_summary['user_type_name'].str.contains('ชั่วคราว', na=False)),
+            "ควรติด",
+            "ยังไม่คุ้ม"
         )
         
         # จัดคอลัมน์และเปลี่ยนชื่อเพื่อแสดงผล
@@ -2110,10 +2132,10 @@ if df is not None:
         
         # --- สรุปภาพรวมลูกค้าที่ควรติดโซล่าร์เซลล์ ---
         total_cust = len(display_df)
-        recommended_cust = len(display_df[display_df['คำแนะนำ'] == '✅ ควรติด'])
+        recommended_cust = len(display_df[display_df['คำแนะนำ'] == 'ควรติด'])
         pct_recommended = (recommended_cust / total_cust * 100) if total_cust > 0 else 0
         
-        profitable_cust = len(display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)])
+        profitable_cust = len(display_df[(display_df['คำแนะนำ'] == 'ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)])
         
         st.markdown("##### สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
         mcol1, mcol2, mcol3, mcol4 = st.columns(4)
@@ -2130,10 +2152,10 @@ if df is not None:
             with st.container(border=True):
                 st.metric("ได้กำไร (ในกลุ่มที่ควรติด)", f"{profitable_cust:,} ราย")
 
-        with st.expander("💡 อ่านคำอธิบาย: เกณฑ์ลูกค้าเป้าหมาย และ ลูกค้าเป้าหมายที่ทำกำไร"):
+        with st.expander("อ่านคำอธิบาย: เกณฑ์ลูกค้าเป้าหมาย และ ลูกค้าเป้าหมายที่ทำกำไร"):
             st.markdown("""
             **1. เกณฑ์เป้าหมายทั่วไป (ควรติดโซล่าร์เซลล์):**
-            - ค่าไฟเฉลี่ยรายเดือน **>= 2,000 บาท**
+            - ค่าไฟเฉลี่ยรายเดือน **>= 3,000 บาท**
             - ระยะเวลาคืนทุนประเมิน **<= 7 ปี**
             - ไม่เป็นผู้ใช้ไฟฟ้าแบบชั่วคราว
             
@@ -2153,7 +2175,7 @@ if df is not None:
             with fcol1:
                 filter_status = st.radio(
                     "สถานะคำแนะนำ:",
-                    options=["แสดงทั้งหมด", "✅ ควรติด", "❌ ยังไม่คุ้ม"],
+                    options=["แสดงทั้งหมด", "ควรติด", "ยังไม่คุ้ม"],
                     horizontal=True,
                     index=1 # ตั้งค่าเริ่มต้นให้เลือกโชว์เฉพาะ 'ควรติด' 
                 )
@@ -2200,7 +2222,7 @@ if df is not None:
             display_df = display_df.reset_index(drop=True)
 
         # กรองข้อมูลเอาเฉพาะกลุ่มที่ "ควรติด" และ "บริษัทได้กำไร"
-        profitable_df = display_df[(display_df['คำแนะนำ'] == '✅ ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)].copy()
+        profitable_df = display_df[(display_df['คำแนะนำ'] == 'ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)].copy()
 
         # --- เพิ่มระบบวิเคราะห์ "โอกาสปิดการขาย" (Lead Scoring) ---
         def evaluate_lead(row):
@@ -2215,9 +2237,9 @@ if df is not None:
             elif row['ประหยัดเงิน (บาท/เดือน)'] >= 3000: score += 2
             elif row['ประหยัดเงิน (บาท/เดือน)'] >= 1500: score += 1
             
-            if score >= 5: return "🔥 โอกาสสูงมาก (Hot Lead)"
-            elif score >= 3: return "⭐ โอกาสปานกลาง (Warm Lead)"
-            else: return "💡 โอกาสทั่วไป (Cold Lead)"
+            if score >= 5: return "โอกาสสูงมาก (Hot Lead)"
+            elif score >= 3: return "โอกาสปานกลาง (Warm Lead)"
+            else: return "โอกาสทั่วไป (Cold Lead)"
 
         if not profitable_df.empty:
             profitable_df['โอกาสปิดการขาย'] = profitable_df.apply(evaluate_lead, axis=1)
@@ -2229,15 +2251,15 @@ if df is not None:
             
             # เรียงลำดับให้ Hot Lead ขึ้นก่อน และตามด้วยกำไรบริษัทสูงสุด
             profitable_df['score_order'] = profitable_df['โอกาสปิดการขาย'].map({
-                "🔥 โอกาสสูงมาก (Hot Lead)": 1, 
-                "⭐ โอกาสปานกลาง (Warm Lead)": 2, 
-                "💡 โอกาสทั่วไป (Cold Lead)": 3
+                "โอกาสสูงมาก (Hot Lead)": 1, 
+                "โอกาสปานกลาง (Warm Lead)": 2, 
+                "โอกาสทั่วไป (Cold Lead)": 3
             })
             profitable_df = profitable_df.sort_values(by=['score_order', 'กำไรบริษัท (บาท)'], ascending=[True, False]).drop(columns=['score_order'])
 
-        hot_leads_df = profitable_df[profitable_df['โอกาสปิดการขาย'] == "🔥 โอกาสสูงมาก (Hot Lead)"] if not profitable_df.empty else pd.DataFrame()
+        hot_leads_df = profitable_df[profitable_df['โอกาสปิดการขาย'] == "โอกาสสูงมาก (Hot Lead)"] if not profitable_df.empty else pd.DataFrame()
 
-        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (ทำกำไรได้ {len(profitable_df):,} ราย | 🎯 **เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
+        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (ทำกำไรได้ {len(profitable_df):,} ราย | **เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
 
         # ใช้ st.column_config เพื่อปรับแต่งตารางให้สวยงามและดูเป็นมืออาชีพมากขึ้น
         table_config = {
@@ -2264,7 +2286,7 @@ if df is not None:
         tab_all, tab_profit, tab_hot = st.tabs([
             f"บ้านที่ควรติดทั้งหมด ({len(display_df)} ราย)", 
             f"เป้าหมายทำกำไรได้ ({len(profitable_df)} ราย)",
-            f"🔥 โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)"
+            f"โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)"
         ])
         
         with tab_all:
@@ -2326,7 +2348,7 @@ if df is not None:
                 st.info("ไม่มีข้อมูลลูกค้าที่ตรงตามเงื่อนไขทำกำไร ให้ดาวน์โหลดในขณะนี้")
                 
         with tab_hot:
-            st.markdown("#### 🎯 กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
+            st.markdown("#### กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
             st.markdown("ลูกค้ากลุ่มนี้คือ **'เพชรยอดมงกุฎ' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) และมียอดประหยัดเงินต่อเดือนสูง ทำให้ลูกค้ารู้สึกถึงความคุ้มค่าและตัดสินใจได้ง่ายขึ้น")
             
             st.dataframe(hot_leads_df, column_config=table_config, hide_index=True, use_container_width=True)
