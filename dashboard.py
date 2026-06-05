@@ -1043,27 +1043,27 @@ if df is not None:
         c_contact1, c_contact2, c_contact3, c_contact4 = st.columns(4)
         with c_contact1:
             with st.container(border=True):
-                line_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45" style="margin-bottom: 5px;"><path fill="#00C300" d="M24 10.3c0-5.7-5.4-10.3-12-10.3S0 4.6 0 10.3c0 5 4.3 9.3 10.1 10.1 1 .2 2.4.6 2.7 1.4.2.6.2 1.5-.1 2.6-.2.9-.8 2.8-.8 2.8s-.3.9 1.3.1c1.5-.8 8.1-4.7 10.2-9 1-2.4 1.2-4.9.6-7z"/><path fill="#FFF" d="M6 13h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v3.4h.9c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4zm3.9 0h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v4.2c0 .2-.2.4-.4.4zm3.8-3.4v3.1c0 .2-.2.4-.4.4h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v1.8l1.7-2c.1-.2.3-.2.5-.2h.9c.2 0 .2.3.1.5L14.7 10l1.8 2.5c.2.2.1.5-.1.5h-1c-.2 0-.4-.1-.5-.3l-1.2-1.7zm5.9 3.4h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h2.1c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.2c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.6c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4z"/></svg>'''
-                st.markdown(f"<div style='text-align:center;'>{line_svg}</div>", unsafe_allow_html=True)
+                line_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45"><path fill="#00C300" d="M24 10.3c0-5.7-5.4-10.3-12-10.3S0 4.6 0 10.3c0 5 4.3 9.3 10.1 10.1 1 .2 2.4.6 2.7 1.4.2.6.2 1.5-.1 2.6-.2.9-.8 2.8-.8 2.8s-.3.9 1.3.1c1.5-.8 8.1-4.7 10.2-9 1-2.4 1.2-4.9.6-7z"/><path fill="#FFF" d="M6 13h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v3.4h.9c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4zm3.9 0h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v4.2c0 .2-.2.4-.4.4zm3.8-3.4v3.1c0 .2-.2.4-.4.4h-.8c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h.8c.2 0 .4.2.4.4v1.8l1.7-2c.1-.2.3-.2.5-.2h.9c.2 0 .2.3.1.5L14.7 10l1.8 2.5c.2.2.1.5-.1.5h-1c-.2 0-.4-.1-.5-.3l-1.2-1.7zm5.9 3.4h-2.1c-.2 0-.4-.2-.4-.4V8.4c0-.2.2-.4.4-.4h2.1c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.2c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4H18v.8h1.6c.2 0 .4.2.4.4v.4c0 .2-.2.4-.4.4z"/></svg>'''
+                st.markdown(f"<div style='text-align:center; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>{line_svg}</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #16a34a; font-weight: bold;'>LINE Official</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>@SolarJoyEnergy</div>", unsafe_allow_html=True)
                 st.link_button("แอดไลน์", "https://line.me/th/", use_container_width=True)
         with c_contact2:
             with st.container(border=True):
-                fb_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45" style="margin-bottom: 5px;"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>'''
-                st.markdown(f"<div style='text-align:center;'>{fb_svg}</div>", unsafe_allow_html=True)
+                fb_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="45" height="45"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>'''
+                st.markdown(f"<div style='text-align:center; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>{fb_svg}</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #0284c7; font-weight: bold;'>Facebook Page</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>SolarJoy Energy</div>", unsafe_allow_html=True)
                 st.link_button("ทักแชท", "https://facebook.com/", use_container_width=True)
         with c_contact3:
             with st.container(border=True):
-                st.markdown("<div style='text-align:center; font-size: 40px; margin-bottom: 10px;'>📱</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; font-size: 40px; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>📱</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #ea580c; font-weight: bold;'>โทรศัพท์ (Hotline)</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>02-123-4567</div>", unsafe_allow_html=True)
                 st.link_button("โทรติดต่อ", "tel:021234567", use_container_width=True)
         with c_contact4:
             with st.container(border=True):
-                st.markdown("<div style='text-align:center; font-size: 40px; margin-bottom: 10px;'>📧</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; font-size: 40px; height: 50px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;'>📧</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #6d28d9; font-weight: bold;'>อีเมล (Email)</div>", unsafe_allow_html=True)
                 st.markdown("<div style='text-align:center; color: #64748b; margin-bottom: 15px;'>hello@solarjoy.com</div>", unsafe_allow_html=True)
                 st.link_button("ส่งอีเมล", "mailto:hello@solarjoy.com", use_container_width=True)
@@ -1073,12 +1073,26 @@ if df is not None:
 
         # ---------------- FOOTER ----------------
         st.markdown("""
-        <hr style="margin-top: 50px;">
-        <center>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-                พัฒนาโดย Solar Analytics Platform ☀️
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #cbd5e1; padding: 40px 20px; border-radius: 24px; margin-top: 60px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <span style="font-size: 28px;">☀️</span>
+                <h2 style="color: white; margin: 0; font-weight: 700;">SolarJoy Energy</h2>
+            </div>
+            <p style="font-size: 15px; margin-bottom: 25px; color: #94a3b8; max-width: 500px; margin-left: auto; margin-right: auto;">
+                ยกระดับการใช้พลังงานของคุณด้วยระบบวิเคราะห์อัจฉริยะ 
+                ให้การติดตั้งโซลาร์เซลล์เป็นเรื่องง่าย คุ้มค่า และยั่งยืน
             </p>
-        </center>
+            <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
+                <a href="#" style="color: #38bdf8; text-decoration: none; font-weight: 500; transition: color 0.2s;">หน้าแรก</a>
+                <a href="#" style="color: #38bdf8; text-decoration: none; font-weight: 500; transition: color 0.2s;">บริการของเรา</a>
+                <a href="#" style="color: #38bdf8; text-decoration: none; font-weight: 500; transition: color 0.2s;">แพ็กเกจ</a>
+                <a href="#" style="color: #38bdf8; text-decoration: none; font-weight: 500; transition: color 0.2s;">ติดต่อเรา</a>
+            </div>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 0 auto 20px auto; max-width: 800px;">
+            <p style="font-size: 13px; color: #64748b; margin: 0;">
+                &copy; 2026 Solar Analytics Platform. All rights reserved. | พัฒนาด้วย 💙 เพื่อพลังงานสะอาด
+            </p>
+        </div>
         """, unsafe_allow_html=True)
         
         st.stop() # หยุดการทำงานสคริปต์ตรงนี้ เพื่อไม่ให้แสดงผลหน้าอื่นซ้อนกัน
@@ -2225,23 +2239,26 @@ if df is not None:
 
         st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (ทำกำไรได้ {len(profitable_df):,} ราย | 🎯 **เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
 
-        # กำหนดรูปแบบให้มีลูกน้ำและจุดทศนิยมสำหรับตาราง (เพื่อให้ยังคลิกเรียงลำดับในหน้าเว็บได้ปกติ)
-        format_dict_solar = {
-            'ฝุ่น PM2.5 (μg/m³)': '{:,.1f}',
-            'ความเข้มแสง (%)': '{:,.0f}%',
-            'ใช้ไฟเดิม (kWh/เดือน)': '{:,.2f}',
-            'ประหยัดไฟ (kWh/เดือน)': '{:,.2f}',
-            'ค่าไฟเดิม (บาท/เดือน)': '{:,.2f}',
-            'ประหยัดเงิน (บาท/เดือน)': '{:,.2f}',
-            'ค่าไฟสุทธิ (บาท/เดือน)': '{:,.2f}',
-            'ขนาดติดตั้ง (kW)': '{:,.2f}',
-            'ราคาขายแพ็กเกจ (บาท)': '{:,.2f}',
-            'กำไรบริษัท (บาท)': '{:,.2f}',
-            'คืนทุน (ปี)': '{:,.1f}'
+        # ใช้ st.column_config เพื่อปรับแต่งตารางให้สวยงามและดูเป็นมืออาชีพมากขึ้น
+        table_config = {
+            "หมายเลขผู้ใช้ไฟ": st.column_config.TextColumn("หมายเลขผู้ใช้ไฟ"),
+            "ประเภทผู้ใช้ไฟ": st.column_config.TextColumn("ประเภทผู้ใช้ไฟ"),
+            "คำแนะนำ": st.column_config.TextColumn("คำแนะนำ"),
+            "โอกาสปิดการขาย": st.column_config.TextColumn("โอกาสปิดการขาย"),
+            "ฝุ่น PM2.5 (μg/m³)": st.column_config.NumberColumn("ฝุ่น PM2.5", format="%.1f"),
+            "ความเข้มแสง (%)": st.column_config.ProgressColumn("ความเข้มแสง (%)", format="%f%%", min_value=0, max_value=100),
+            "ใช้ไฟเดิม (kWh/เดือน)": st.column_config.NumberColumn("ใช้ไฟเดิม (kWh/เดือน)", format="%.2f"),
+            "ประหยัดไฟ (kWh/เดือน)": st.column_config.NumberColumn("ประหยัดไฟ (kWh/เดือน)", format="%.2f"),
+            "ค่าไฟเดิม (บาท/เดือน)": st.column_config.NumberColumn("ค่าไฟเดิม", format="฿ %.2f"),
+            "ประหยัดเงิน (บาท/เดือน)": st.column_config.NumberColumn("ประหยัดเงิน", format="฿ %.2f"),
+            "ค่าไฟสุทธิ (บาท/เดือน)": st.column_config.NumberColumn("ค่าไฟสุทธิ", format="฿ %.2f"),
+            "ขนาดติดตั้ง (kW)": st.column_config.NumberColumn("ขนาด (kW)", format="%.2f"),
+            "แพ็กเกจที่แนะนำ": st.column_config.TextColumn("แพ็กเกจ"),
+            "จำนวนแผง (แผงละ 550W)": st.column_config.NumberColumn("แผง", format="%d"),
+            "ราคาขายแพ็กเกจ (บาท)": st.column_config.NumberColumn("ราคาขายแพ็กเกจ", format="฿ %.0f"),
+            "กำไรบริษัท (บาท)": st.column_config.NumberColumn("กำไรบริษัท", format="฿ %.0f"),
+            "คืนทุน (ปี)": st.column_config.ProgressColumn("คืนทุน (ปี)", format="%.1f", min_value=0, max_value=10),
         }
-        
-        # ปรับขยายขีดจำกัดการ Render ของ Pandas Styler ให้รองรับข้อมูลตารางขนาดใหญ่
-        pd.set_option("styler.render.max_elements", max(display_df.size, 262144))
         
         # สร้าง Tabs เพื่อแยกตารางการแสดงผล
         tab_all, tab_profit, tab_hot = st.tabs([
@@ -2251,7 +2268,7 @@ if df is not None:
         ])
         
         with tab_all:
-            st.dataframe(display_df.style.format(format_dict_solar), use_container_width=True)
+            st.dataframe(display_df, column_config=table_config, hide_index=True, use_container_width=True)
             # --- ส่วนปุ่ม Export ไฟล์ Excel (ทั้งหมด) ---
             st.markdown("<br>", unsafe_allow_html=True)
             if not display_df.empty:
@@ -2278,7 +2295,7 @@ if df is not None:
                     )
         
         with tab_profit:
-            st.dataframe(profitable_df.style.format(format_dict_solar), use_container_width=True)
+            st.dataframe(profitable_df, column_config=table_config, hide_index=True, use_container_width=True)
             # --- ส่วนปุ่ม Export ไฟล์ Excel (ทำกำไร) ---
             st.markdown("<br>", unsafe_allow_html=True)
             if not profitable_df.empty:
@@ -2312,7 +2329,7 @@ if df is not None:
             st.markdown("#### 🎯 กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
             st.markdown("ลูกค้ากลุ่มนี้คือ **'เพชรยอดมงกุฎ' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) และมียอดประหยัดเงินต่อเดือนสูง ทำให้ลูกค้ารู้สึกถึงความคุ้มค่าและตัดสินใจได้ง่ายขึ้น")
             
-            st.dataframe(hot_leads_df.style.format(format_dict_solar), use_container_width=True)
+            st.dataframe(hot_leads_df, column_config=table_config, hide_index=True, use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             if not hot_leads_df.empty:
