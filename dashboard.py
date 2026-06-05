@@ -616,9 +616,9 @@ if page == "คำนวณโซล่าร์เซลล์ (ด้วยต
     with c1:
         manual_monthly_kwh = st.number_input("ระบุหน่วยการใช้ไฟรวมต่อเดือน (kWh)", min_value=0.0, value=0.0, step=100.0)
     with c2:
-        usage_type = st.selectbox("ประเภทสถานที่ (เพื่อกะสัดส่วนการใช้ไฟกลางวัน):", ["บ้านพักอาศัย (ใช้ไฟกลางวัน ~50%)", "กิจการ/ออฟฟิศ (ใช้ไฟกลางวัน ~70%)"])
+        day_ratio_pct = st.number_input("สัดส่วนการใช้ไฟกลางวัน (%)", min_value=0, max_value=100, value=50, step=5, help="ระบุเปอร์เซ็นต์การใช้ไฟในช่วง 08:00 - 17:00 น. (ตัวอย่างเช่น บ้านทั่วไป 40-50%, โฮมออฟฟิศ 60-70%)")
         
-    day_ratio = 0.5 if "บ้าน" in usage_type else 0.7
+    day_ratio = day_ratio_pct / 100.0
     total_daily_kwh_manual = (manual_monthly_kwh / 30.0) * day_ratio if manual_monthly_kwh > 0 else 0.0
     
     st.markdown("---")
@@ -1321,6 +1321,13 @@ if df is not None:
                 }
                 
                 st.dataframe(display_growth.style.format(format_growth), use_container_width=True)
+                
+                # เพิ่มสรุปผลกราฟที่ 1
+                total_growth_kwh = ((pivot_df['kwh_total_2026'].sum() - pivot_df['kwh_total_2025'].sum()) / pivot_df['kwh_total_2025'].sum()) * 100 if pivot_df['kwh_total_2025'].sum() > 0 else 0
+                total_growth_cust = pivot_df['customer_count_2026'].sum() - pivot_df['customer_count_2025'].sum()
+                trend_text = "เพิ่มขึ้น" if total_growth_kwh > 0 else "ลดลง"
+                st.success(f"**สรุปผลการเปรียบเทียบ (YoY):** จากข้อมูลพบว่าแนวโน้มการใช้ไฟฟ้ารวมในช่วงต้นปี 2026 **{trend_text} {abs(total_growth_kwh):.2f}%** เมื่อเทียบกับปี 2025 "
+                           f"และการเปลี่ยนแปลงของจำนวนผู้ใช้ไฟทั้งหมด **{total_growth_cust:+,.0f} ราย** ซึ่งสะท้อนให้เห็นถึงแนวโน้มความต้องการใช้พลังงาน (Demand) ในตลาดที่{trend_text}")
             else:
                 st.info("ข้อมูลไม่เพียงพอสำหรับการเปรียบเทียบการเติบโตระหว่างปี 2025 และ 2026 (อาจมีข้อมูลเพียงปีเดียว)")
         else:
@@ -1421,6 +1428,13 @@ if df is not None:
                 st.plotly_chart(fig, use_container_width=True)
 
                 st.info("**ผู้ใช้ใหม่** คือคนที่ไม่เคยเห็นรหัสนี้มาก่อนในข้อมูลเดือนก่อนหน้า | **ผู้ใช้ที่หายไป** คือคนที่มีชื่อเดือนที่แล้วแต่ไม่มีในเดือนนี้")
+                
+                # เพิ่มสรุปผลกราฟที่ 2
+                total_new = comparison_df["ผู้ใช้ใหม่ (New)"].sum()
+                total_lost = comparison_df["ผู้ใช้ที่หายไป (Lost)"].sum()
+                net_change = total_new - total_lost
+                status_text = "เติบโตเพิ่มขึ้น" if net_change >= 0 else "หดตัวลง"
+                st.success(f"**สรุปความเคลื่อนไหวรายเดือน:** ตลอดช่วงเวลาที่วิเคราะห์ พบว่ามีฐานลูกค้าใหม่เข้ามาในระบบสะสม **{total_new:,} ราย** และหายไป **{total_lost:,} ราย** (สุทธิแล้วฐานลูกค้า**{status_text} {abs(net_change):,} ราย**) ข้อมูลนี้ช่วยให้มองเห็นอัตราการเข้าออกของลูกค้า (Churn Rate) และสามารถนำไปวางแผนขยายฐานลูกค้าใหม่เพื่อนำเสนอโครงการได้")
             else:
                 st.info("ข้อมูลไม่เพียงพอสำหรับสร้างกราฟความเคลื่อนไหวรายเดือน")
         else:
@@ -1446,8 +1460,16 @@ if df is not None:
                                  title="สัดส่วนเม็ดเงินค่าไฟ (บาท) ตามกลุ่มลูกค้า", hole=0.4)
             st.plotly_chart(fig_pie_amt, use_container_width=True)
 
-            st.divider()
-            st.stop() # จบหน้าแดชบอร์ดตรงนี้
+        st.write("")
+        if not type_summary_amt.empty and not type_summary_kwh.empty:
+            top_kwh_group = type_summary_kwh.sort_values(by='kwh_total', ascending=False).iloc[0]
+            top_amt_group = type_summary_amt.sort_values(by='amt_invoice', ascending=False).iloc[0]
+            st.success(f"**สรุปสัดส่วนกลุ่มเป้าหมาย:** กลุ่มลูกค้าที่มีปริมาณการใช้ไฟฟ้าสุทธิสูงสุดคือ **{top_kwh_group['user_type_name']}** "
+                       f"แต่กลุ่มที่สร้างเม็ดเงินค่าไฟ (มูลค่าตลาด) รวมสูงสุดคือ **{top_amt_group['user_type_name']}** "
+                       f"ดังนั้นในเชิงกลยุทธ์การขาย บริษัทควรจัดลำดับความสำคัญในการเข้าไปเสนอโปรเจกต์กับกลุ่ม **{top_amt_group['user_type_name']}** เป็นอันดับแรก เพื่อผลตอบแทนรวมที่สูงที่สุด")
+
+        st.divider()
+        st.stop() # จบหน้าแดชบอร์ดตรงนี้
 
     # ==========================================
     # ส่วนที่ 3: หน้าค้นหาและวิเคราะห์ลูกค้าเป้าหมาย
