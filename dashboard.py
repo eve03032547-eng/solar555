@@ -905,6 +905,11 @@ if df is not None:
                                 <div style="font-size: 14px; color: #7C3AED; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #F3E8FF; border-radius: 8px;">รวมอยู่ในราคาแพ็กเกจแล้ว</div>
                             </div>
                             """, unsafe_allow_html=True)
+                            
+                            # เพิ่มคำอธิบายจุดเด่นของแผงแต่ละยี่ห้อ
+                            if 'description' in p_model:
+                                st.markdown(f"<p style='font-size: 13px; color: #4a5568; text-align: left; min-height: 100px; border-left: 3px solid #c084fc; padding-left: 10px;'>{p_model['description']}</p>", unsafe_allow_html=True)
+
                             if st.button(f"เลือกแผง {p_model['name']}", key=f"select_panel_{pkg_name}_{i}", use_container_width=True):
                                 st.success(f"คุณสนใจแผงโซล่าร์เซลล์รุ่น {p_model['name']} (รวมอยู่ในราคาแพ็กเกจด้านล่างแล้ว ไม่มีบวกเพิ่ม)")
 
@@ -929,6 +934,11 @@ if df is not None:
                                     <div style="font-size: 14px; color: #0284C7; font-weight: bold; margin-top: 10px; padding: 5px; background-color: #E0F2FE; border-radius: 8px;">ราคารวมทั้งแพ็กเกจ: {model['price']}</div>
                             </div>
                             """, unsafe_allow_html=True)
+
+                            # เพิ่มคำอธิบายจุดเด่นของอินเวอร์เตอร์แต่ละยี่ห้อ
+                            if 'description' in model:
+                                st.markdown(f"<p style='font-size: 13px; color: #4a5568; text-align: left; min-height: 120px; border-left: 3px solid #60a5fa; padding-left: 10px;'>{model['description']}</p>", unsafe_allow_html=True)
+
                             if st.button(f"สนใจแพ็กเกจ {model['name']}", key=f"select_{pkg_name}_{i}", use_container_width=True):
                                 st.success(f"คุณสนใจแพ็กเกจแบบครบชุด เซ็ต {model['name']} ในราคารวม {model['price']}")
 
@@ -937,8 +947,8 @@ if df is not None:
 
         # รายชื่อแผงโซล่าร์เซลล์มาตรฐาน (Tier 1) ที่ใช้กับทุกแพ็กเกจ
         panel_models_std = [ 
-            {"name": "Jinko Tiger Pro 550W", "image": get_image_path("Jiinko_550w.jpg", "package3kW")},
-            {"name": "LONGI Hi-MO 5 550W", "image": get_image_path("Longi550w.png", "package3kW")}
+            {"name": "Jinko Tiger Pro 550W", "image": get_image_path("Jiinko_550w.jpg", "package3kW"), "description": "แบรนด์ยอดขายอันดับ 1 ของโลก มีชื่อเสียงด้านเทคโนโลยี N-Type TOPCon ที่ให้ประสิทธิภาพสูงและทนทานต่อสภาพอากาศร้อนได้ดีเยี่ยม"},
+            {"name": "LONGI Hi-MO 5 550W", "image": get_image_path("Longi550w.png", "package3kW"), "description": "ผู้ผลิตแผงโซล่าเซลล์รายใหญ่ที่สุดของโลก โดดเด่นด้านนวัตกรรมเซลล์แสงอาทิตย์แบบ Mono-crystalline ที่ให้กำลังการผลิตสูงและเสถียร"}
         ]
 
         col1, col2, col3 = st.columns(3)
@@ -954,8 +964,8 @@ if df is not None:
                 st.markdown("เหมาะสำหรับ: บ้านพักอาศัยขนาดเล็ก\n\nราคารวมติดตั้งเริ่มต้น: **135,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("ดูรายละเอียด", key="btn_s", use_container_width=True):
                     models_s = [
-                        {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": get_image_path("SUN2000-3KTL-L1..webp", "package3kW")},
-                        {"name": "Growatt MIN 3000TL-X", "price": "135,000 บาท", "image": get_image_path("Growatt-MIN-3000-TL-X.webp", "package3kW")}
+                        {"name": "Huawei SUN2000-3KTL-L1", "price": "145,000 บาท", "image": get_image_path("SUN2000-3KTL-L1..webp", "package3kW"), "description": "แบรนด์ชั้นนำระดับโลก โดดเด่นด้านเทคโนโลยี AI, ระบบป้องกันฟ้าผ่า, และฟีเจอร์ AFCI ป้องกันไฟไหม้ มาพร้อมแอปพลิเคชัน FusionSolar ที่เสถียรและใช้งานง่าย"},
+                        {"name": "Growatt MIN 3000TL-X", "price": "135,000 บาท", "image": get_image_path("Growatt-MIN-3000-TL-X.webp", "package3kW"), "description": "แบรนด์ยอดนิยมในไทยและทั่วโลก มีจุดเด่นที่ราคาคุ้มค่า ประสิทธิภาพสูง และมีศูนย์บริการในประเทศไทยที่ดูแลและให้บริการหลังการขายได้รวดเร็ว"}
                     ]
                     show_details("แพ็กเกจ", "3 kW", "135,000 - 145,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 5-6 แผง\n- อินเวอร์เตอร์ 1 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 1 ปี", models=models_s, panel_models=panel_models_std)
         with col2:
@@ -970,8 +980,8 @@ if df is not None:
                 st.markdown("เหมาะสำหรับ: บ้านพักอาศัยขนาดกลาง-ใหญ่\n\nราคารวมติดตั้งเริ่มต้น: **189,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("ดูรายละเอียด", key="btn_m", use_container_width=True):
                     models_m = [
-                        {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": get_image_path("SUN2000-5KTL-L1-01.webp", "package3kW")},
-                        {"name": "Growatt MIN 5000TL-X", "price": "189,000 บาท", "image": get_image_path("growatt-min-5000tl-x.jpg", "package3kW")}
+                        {"name": "Huawei SUN2000-5KTL-L1", "price": "200,000 บาท", "image": get_image_path("SUN2000-5KTL-L1-01.webp", "package3kW"), "description": "แบรนด์ชั้นนำระดับโลก โดดเด่นด้านเทคโนโลยี AI, ระบบป้องกันฟ้าผ่า, และฟีเจอร์ AFCI ป้องกันไฟไหม้ มาพร้อมแอปพลิเคชัน FusionSolar ที่เสถียรและใช้งานง่าย"},
+                        {"name": "Growatt MIN 5000TL-X", "price": "189,000 บาท", "image": get_image_path("growatt-min-5000tl-x.jpg", "package3kW"), "description": "แบรนด์ยอดนิยมในไทยและทั่วโลก มีจุดเด่นที่ราคาคุ้มค่า ประสิทธิภาพสูง และมีศูนย์บริการในประเทศไทยที่ดูแลและให้บริการหลังการขายได้รวดเร็ว"}
                     ]
                     show_details("แพ็กเกจ", "5 kW", "189,000 - 200,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 8-10 แผง\n- อินเวอร์เตอร์ 1 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 1 ปี", models=models_m, panel_models=panel_models_std)
         with col3:
@@ -986,8 +996,8 @@ if df is not None:
                 st.markdown("เหมาะสำหรับ: โฮมออฟฟิศ, กิจการขนาดเล็ก\n\nราคารวมติดตั้งเริ่มต้น: **315,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("ดูรายละเอียด", key="btn_l", use_container_width=True):
                     models_l = [
-                        {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": get_image_path("SUN2000-10KTL-M1-01.webp", "package3kW")},
-                        {"name": "Growatt MOD 10KTL3-X", "price": "315,000 บาท", "image": get_image_path("growatt-mod-10ktl3-x.jpg", "package3kW")}
+                        {"name": "Huawei SUN2000-10KTL-M1", "price": "329,000 บาท", "image": get_image_path("SUN2000-10KTL-M1-01.webp", "package3kW"), "description": "แบรนด์ชั้นนำระดับโลก โดดเด่นด้านเทคโนโลยี AI, ระบบป้องกันฟ้าผ่า, และฟีเจอร์ AFCI ป้องกันไฟไหม้ มาพร้อมแอปพลิเคชัน FusionSolar ที่เสถียรและใช้งานง่าย"},
+                        {"name": "Growatt MOD 10KTL3-X", "price": "315,000 บาท", "image": get_image_path("growatt-mod-10ktl3-x.jpg", "package3kW"), "description": "แบรนด์ยอดนิยมในไทยและทั่วโลก มีจุดเด่นที่ราคาคุ้มค่า ประสิทธิภาพสูง และมีศูนย์บริการในประเทศไทยที่ดูแลและให้บริการหลังการขายได้รวดเร็ว"}
                     ]
                     show_details("แพ็กเกจ", "10 kW", "315,000 - 329,000 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 14-18 แผง\n- อินเวอร์เตอร์ 3 เฟส จำนวน 1 ตัว พร้อมสมาร์ทมิเตอร์\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี\n- รับประกันงานติดตั้ง 2 ปี", models=models_l, panel_models=panel_models_std)
             
@@ -1005,8 +1015,8 @@ if df is not None:
                 st.markdown("เหมาะสำหรับ: โรงงาน, กิจการขนาดกลาง\n\nราคารวมติดตั้งเริ่มต้น: **439,000 บาท**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("ดูรายละเอียด", key="btn_xl", use_container_width=True):
                     models_xl = [
-                        {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": get_image_path("Huawei-SUN2000-15KTL-M2.jpg", "package3kW")},
-                        {"name": "Growatt MID 15KTL3-X", "price": "439,000 บาท", "image": get_image_path("Growatt MID 15KTL3-X.webp", "package3kW")}
+                        {"name": "Huawei SUN2000-15KTL-M2", "price": "454,900 บาท", "image": get_image_path("Huawei-SUN2000-15KTL-M2.jpg", "package3kW"), "description": "แบรนด์ชั้นนำระดับโลก โดดเด่นด้านเทคโนโลยี AI, ระบบป้องกันฟ้าผ่า, และฟีเจอร์ AFCI ป้องกันไฟไหม้ มาพร้อมแอปพลิเคชัน FusionSolar ที่เสถียรและใช้งานง่าย"},
+                        {"name": "Growatt MID 15KTL3-X", "price": "439,000 บาท", "image": get_image_path("Growatt MID 15KTL3-X.webp", "package3kW"), "description": "แบรนด์ยอดนิยมในไทยและทั่วโลก มีจุดเด่นที่ราคาคุ้มค่า ประสิทธิภาพสูง และมีศูนย์บริการในประเทศไทยที่ดูแลและให้บริการหลังการขายได้รวดเร็ว"}
                     ]
                     show_details("แพ็กเกจ", "15 kW", "439,000 - 454,900 บาท", "- แผงโซล่าร์เซลล์ (550W) จำนวน 20-28 แผง\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- ฟรี! ค่าดำเนินการขออนุญาตขนานไฟกับการไฟฟ้า\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xl, panel_models=panel_models_std)
         with col5:
@@ -1021,12 +1031,82 @@ if df is not None:
                 st.markdown("เหมาะสำหรับ: โรงงานใหญ่, อุตสาหกรรม\n\nราคารวมติดตั้งเริ่มต้น: **500,000 บาทขึ้นไป**\n\n*(ราคารวมแผง, อินเวอร์เตอร์ และอุปกรณ์ครบชุด)*")
                 if st.button("ดูรายละเอียด", key="btn_xxl", use_container_width=True):
                     models_xxl = [
-                        {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": get_image_path("SUN2000-30KTL-M3.2.webp", "package3kW")},
-                        {"name": "Growatt MID 30KTL3-X", "price": "520,000 บาท", "image": get_image_path("Growatt MID 30KTL3-X.webp", "package3kW")},
-                        {"name": "Solis 30K-5G", "price": "500,000 บาท", "image": get_image_path("Solis 30K-5G.jpg", "package3kW")}
+                        {"name": "Huawei SUN2000-30KTL-M3", "price": "550,000 บาท", "image": get_image_path("SUN2000-30KTL-M3.2.webp", "package3kW"), "description": "แบรนด์ชั้นนำระดับโลก โดดเด่นด้านเทคโนโลยี AI, ระบบป้องกันฟ้าผ่า, และฟีเจอร์ AFCI ป้องกันไฟไหม้ มาพร้อมแอปพลิเคชัน FusionSolar ที่เสถียรและใช้งานง่าย"},
+                        {"name": "Growatt MID 30KTL3-X", "price": "520,000 บาท", "image": get_image_path("Growatt MID 30KTL3-X.webp", "package3kW"), "description": "แบรนด์ยอดนิยมในไทยและทั่วโลก มีจุดเด่นที่ราคาคุ้มค่า ประสิทธิภาพสูง และมีศูนย์บริการในประเทศไทยที่ดูแลและให้บริการหลังการขายได้รวดเร็ว"},
+                        {"name": "Solis 30K-5G", "price": "500,000 บาท", "image": get_image_path("Solis 30K-5G.jpg", "package3kW"), "description": "อินเวอร์เตอร์คุณภาพสูงที่ได้รับความนิยมในยุโรปและออสเตรเลีย มีชื่อเสียงด้านความทนทานและประสิทธิภาพการแปลงไฟที่ยอดเยี่ยมในราคาที่เข้าถึงง่าย"}
                     ]
                     show_details("แพ็กเกจ", ">15 kW", "500,000 - 550,000 บาทขึ้นไป", "- แผงโซล่าร์เซลล์ (550W) จำนวน 30 แผงขึ้นไป\n- อินเวอร์เตอร์ 3 เฟส พร้อมสมาร์ทมิเตอร์\n- ออกแบบระบบและประเมินโหลดตามการใช้งานจริง\n- บริการสำรวจและประเมินโครงสร้างหลังคาฟรี\n- รับประกันแผงโซล่าร์เซลล์ 25 ปี", models=models_xxl, panel_models=panel_models_std)
             
+        st.divider()
+        
+        # ---------------- BATTERY PACKAGES ----------------
+        st.markdown("## แพ็กเกจอัปเกรดแบตเตอรี่ (Energy Storage System)")
+        st.markdown("*(สำหรับลูกค้าที่สนใจเก็บไฟไว้ใช้ตอนกลางคืน หรือต้องการระบบสำรองไฟตอนไฟดับ อุปกรณ์และแบรนด์ได้รับการขึ้นทะเบียนมาตรฐานจาก PEA)*")
+        
+        bat1, bat2, bat3 = st.columns(3)
+        with bat1:
+            with st.container(border=True):
+                st.markdown(f"""
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <div style="height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                        <img src="{get_base64_image('LUNA2000.webp', 'Battery')}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div style="background-color: #FFD6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #3B0764; font-size: 20px;">Huawei LUNA2000</h3>
+                        <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">ความจุ 5 kWh</span>
+                    </div>
+                    <div style="flex-grow: 1; min-height: 150px; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                        <b>เหมาะสำหรับ:</b> เปิดแอร์ 9,000 BTU 1 ตัว (ได้นาน ~4-5 ชม.)<br><br>
+                        <b>ราคาเริ่มต้น:</b> <b style="color: #0f172a; font-size: 16px;">159,000 บาท</b><br><br>
+                        <i>(แบรนด์พรีเมียม ดีไซน์สวยงามและปลอดภัยสูง)</i>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("ดูรายละเอียด", key="btn_bat_huawei", use_container_width=True):
+                    show_details("แพ็กเกจแบตเตอรี่ Huawei LUNA2000", "5 kWh", "159,000 บาท", "- แบตเตอรี่ Lithium Iron Phosphate (LiFePO4) ความจุ 5 kWh\n- ระบบจัดการแบตเตอรี่อัจฉริยะ (BMS) ระดับเซลล์ในตัว\n- ดีไซน์สวยงาม ติดตั้งง่าย สามารถซื้อเพิ่มเพื่อขยายความจุได้ในอนาคต\n- มาตรฐานความปลอดภัยระดับสูง ป้องกันไฟไหม้\n- อุปกรณ์ขึ้นทะเบียนและรับรองโดย กฟภ. (PEA)\n- รับประกันสินค้า 10 ปีเต็ม")
+
+        with bat2:
+            with st.container(border=True):
+                st.markdown(f"""
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <div style="height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                        <img src="{get_base64_image('growatt-5-1-kwh.webp', 'Battery')}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div style="background-color: #E7C6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #3B0764; font-size: 20px;">Growatt ARK</h3>
+                        <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">ความจุ 5.1 kWh</span>
+                    </div>
+                    <div style="flex-grow: 1; min-height: 150px; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                        <b>เหมาะสำหรับ:</b> เปิดแอร์และตู้เย็น (ได้นาน ~4-5 ชม.)<br><br>
+                        <b>ราคาเริ่มต้น:</b> <b style="color: #0f172a; font-size: 16px;">135,000 บาท</b><br><br>
+                        <i>(คุ้มค่าต่อการลงทุน ขยายความจุได้ง่าย)</i>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("ดูรายละเอียด", key="btn_bat_growatt", use_container_width=True):
+                    show_details("แพ็กเกจแบตเตอรี่ Growatt ARK", "5.1 kWh", "135,000 บาท", "- แบตเตอรี่ Lithium Iron Phosphate (LiFePO4) ความจุ 5.1 kWh\n- รองรับการใช้งานร่วมกับอินเวอร์เตอร์ Growatt แบบ Hybrid\n- ดีไซน์แบบโมดูล วางซ้อนกันได้ ประหยัดพื้นที่การติดตั้ง\n- อายุการใช้งานยาวนาน (Cycle Life สูง)\n- อุปกรณ์ขึ้นทะเบียนและรับรองโดย กฟภ. (PEA)\n- รับประกันสินค้า 10 ปีเต็ม")
+
+        with bat3:
+            with st.container(border=True):
+                st.markdown(f"""
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <div style="height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                        <img src="{get_base64_image('Deye  Dyness.png', 'Battery')}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div style="background-color: #C8B6FF; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #3B0764; font-size: 20px;">Deye / Dyness</h3>
+                        <span style="color: #2E1065; font-weight: bold; font-size: 1.1em;">ความจุ 10 kWh</span>
+                    </div>
+                    <div style="flex-grow: 1; min-height: 150px; color: #4a5568; font-size: 14px; line-height: 1.6;">
+                        <b>เหมาะสำหรับ:</b> เปิดแอร์ 2 ตัว หรือบ้านที่ใช้ไฟกลางคืนเยอะ<br><br>
+                        <b>ราคาเริ่มต้น:</b> <b style="color: #0f172a; font-size: 16px;">180,000 บาท</b><br><br>
+                        <i>(ความจุสูงจัดเต็ม ราคาต่อหน่วยคุ้มค่าที่สุด)</i>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("ดูรายละเอียด", key="btn_bat_deye", use_container_width=True):
+                    show_details("แพ็กเกจแบตเตอรี่ Deye / Dyness", "10 kWh", "180,000 บาท", "- แบตเตอรี่ Lithium Iron Phosphate (LiFePO4) ความจุขนาดใหญ่ 10 kWh\n- นิยมใช้คู่กับอินเวอร์เตอร์ Hybrid แบรนด์ยอดนิยม\n- ตอบโจทย์บ้านที่ใช้ไฟกลางคืนเยอะ และต้องการไฟสำรองยาวนานเมื่อไฟดับ\n- คุ้มค่าที่สุดเมื่อเทียบราคาต่อความจุ (kWh)\n- อุปกรณ์ขึ้นทะเบียนและรับรองโดย กฟภ. (PEA)\n- รับประกันสินค้า 10 ปีเต็ม")
+
         st.divider()
         
         # ---------------- NEWS & ARTICLES ----------------
@@ -1121,11 +1201,33 @@ if df is not None:
 
     # --- Sidebar สำหรับฟิลเตอร์ (ตัวกรอง) ---
     st.sidebar.header("ตัวกรองข้อมูล")
-    selected_types = st.sidebar.multiselect(
-        "เลือกประเภทผู้ใช้งานเป้าหมาย",
-        options=df['user_type_name'].unique(),
-        default=df['user_type_name'].unique()
+    
+    customer_group_filter = st.sidebar.radio(
+        "แยกตามกลุ่มลูกค้าเป้าหมาย:",
+        options=["แสดงทุกประเภท", "🏢 กิจการขนาดใหญ่", "🏪 กิจการขนาดกลาง", "🏠 บ้านอยู่อาศัย", "🔧 กำหนดเอง..."]
     )
+    
+    all_user_types = df['user_type_name'].unique()
+    
+    if customer_group_filter == "🏢 กิจการขนาดใหญ่":
+        pre_selected = [t for t in all_user_types if "ขนาดใหญ่" in str(t)]
+    elif customer_group_filter == "🏪 กิจการขนาดกลาง":
+        pre_selected = [t for t in all_user_types if "ขนาดกลาง" in str(t)]
+    elif customer_group_filter == "🏠 บ้านอยู่อาศัย":
+        pre_selected = [t for t in all_user_types if "บ้าน" in str(t)]
+    else:
+        pre_selected = all_user_types
+        
+    if customer_group_filter == "🔧 กำหนดเอง...":
+        selected_types = st.sidebar.multiselect(
+            "เลือกประเภทผู้ใช้งานเป้าหมาย",
+            options=all_user_types,
+            default=all_user_types
+        )
+    else:
+        selected_types = pre_selected
+        if customer_group_filter != "แสดงทุกประเภท":
+            st.sidebar.info(f"**กำลังแสดงเฉพาะ:**\n" + "\n".join([f"- {t}" for t in selected_types]))
     
     # กรองข้อมูลตามประเภทที่เลือก
     filtered_df = df[df['user_type_name'].isin(selected_types)]
@@ -1482,6 +1584,8 @@ if df is not None:
         st.subheader("แผนที่แสดงเป้าหมายลูกค้าที่ควรติดโซล่าร์เซลล์")
         st.markdown("*(แสดงจุดพิกัดของลูกค้าเพื่อประเมินศักยภาพในการเสนอโปรเจกต์)*")
 
+    show_only_hot_leads = st.toggle("🔥 แสดงเฉพาะกลุ่มโอกาสปิดการขายสูง (Hot Leads)", value=False, help="กรองเฉพาะลูกค้าที่คืนทุนไว ประหยัดเยอะ และบริษัทได้กำไรจากการติดตั้ง")
+
     # ดึงคอลัมน์พิกัด G และ H ที่ถูกกำหนดชื่อมาจาก read_all_csv.py
     x_col = 'x_coord' if 'x_coord' in filtered_df.columns else None
     y_col = 'y_coord' if 'y_coord' in filtered_df.columns else None
@@ -1536,9 +1640,24 @@ if df is not None:
                 map_summary['ค่าไฟเฉลี่ย/เดือน'] = (map_summary['total_amt'] / map_summary['bill_count']).round(2)
                 avg_kwh = map_summary['total_kwh'] / map_summary['bill_count']
                 
-                actual_kw = np.ceil((avg_kwh * 0.5 / 120) / 0.55) * 0.55
+                def get_map_day_ratio(u_type):
+                    u_str = str(u_type)
+                    if "บ้าน" in u_str: return 0.5
+                    elif "กิจการ" in u_str: return 0.7
+                    else: return 0.85
+                map_summary['day_ratio'] = map_summary['user_type'].apply(get_map_day_ratio) if 'user_type' in map_summary.columns else 0.85
+                
+                def get_map_max_kw(u_type):
+                    u_str = str(u_type)
+                    if "บ้าน" in u_str: return 15.0
+                    elif "กิจการขนาดใหญ่" in u_str or "กิจการเฉพาะอย่าง" in u_str: return 5000.0
+                    else: return 150.0
+                map_summary['max_kw_limit'] = map_summary['user_type'].apply(get_map_max_kw) if 'user_type' in map_summary.columns else 150.0
+                
+                raw_kw = avg_kwh * map_summary['day_ratio'] / 120
+                actual_kw = np.ceil(np.minimum(raw_kw, map_summary['max_kw_limit']) / 0.55) * 0.55
                 avg_rate = np.where(avg_kwh > 0, map_summary['ค่าไฟเฉลี่ย/เดือน'] / avg_kwh, 4.5)
-                solar_produced = actual_kw * (120 * 0.92) # หักประสิทธิภาพฝุ่นเมฆ 8% คร่าวๆ
+                solar_produced = actual_kw * (120 * 0.931) # หักประสิทธิภาพฝุ่นเมฆ (ให้ตรงกับช่องค้นหา)
                 kwh_saved = np.minimum(solar_produced, avg_kwh)
                 monthly_savings = np.minimum(kwh_saved * avg_rate, map_summary['ค่าไฟเฉลี่ย/เดือน'])
                 
@@ -1572,15 +1691,38 @@ if df is not None:
                     return "ยังไม่คุ้มทุน"
                     
                 map_summary['สถานะ'] = map_summary.apply(eval_map_status, axis=1)
+
+                # --- ประเมินโอกาสปิดการขายสูง (Hot Leads) สำหรับแผนที่ ---
+                map_summary['monthly_savings'] = monthly_savings
+                cost_vals_map = [actual_kw * 35000, actual_kw * 28000, actual_kw * 24000, actual_kw * 22000]
+                cost_map = np.select(inv_conds, cost_vals_map, default=actual_kw * 20000)
+                map_summary['company_profit'] = investment_map - cost_map
+                
+                def eval_map_hot_lead(row):
+                    if row['สถานะ'] == "ยังไม่คุ้มทุน" or row['company_profit'] <= 0: 
+                        return False
+                    score = 0
+                    if row['payback_years'] <= 4.5: score += 3
+                    elif row['payback_years'] <= 5.5: score += 2
+                    elif row['payback_years'] <= 6.5: score += 1
+                    if row['monthly_savings'] >= 5000: score += 3
+                    elif row['monthly_savings'] >= 3000: score += 2
+                    elif row['monthly_savings'] >= 1500: score += 1
+                    return score >= 5
+                    
+                map_summary['is_hot_lead'] = map_summary.apply(eval_map_hot_lead, axis=1)
                 
                 # เตรียมข้อมูลเพิ่มเติมสำหรับแสดงตอนชี้เมาส์ (Hover)
                 map_summary['ประเภทผู้ใช้ไฟ'] = map_summary.get('user_type', 'ไม่ระบุ')
-                map_summary['ค่าไฟก่อนติด (บาท/เดือน)'] = map_summary['ค่าไฟเฉลี่ย/เดือน']
-                map_summary['ค่าไฟหลังติด (บาท/เดือน)'] = (map_summary['ค่าไฟเฉลี่ย/เดือน'] - monthly_savings).round(2)
+                map_summary['ค่าไฟเฉลี่ย (บาท/เดือน)'] = map_summary['ค่าไฟเฉลี่ย/เดือน']
+                map_summary['ค่าไฟเฉลี่ยหลังติด (บาท/เดือน)'] = (map_summary['ค่าไฟเฉลี่ย/เดือน'] - monthly_savings).round(2)
                 map_summary['คืนทุน (ปี)'] = np.round(payback_years, 1)
+                map_summary['โอกาสปิดการขาย'] = np.where(map_summary['is_hot_lead'], "🔥 สูงมาก (Hot Lead)", "ทั่วไป")
 
                 # กรองให้เหลือเฉพาะเป้าหมายที่ควรเสนอโครงการ (ควรติดโซล่าร์เซลล์)
                 map_summary = map_summary[map_summary['สถานะ'] != "ยังไม่คุ้มทุน"]
+                if show_only_hot_leads:
+                    map_summary = map_summary[map_summary['is_hot_lead']]
 
                 map_df = map_summary
                 color_col = 'สถานะ'
@@ -1589,7 +1731,16 @@ if df is not None:
                     "ควรติด (กิจการขนาดกลาง)": "#D500F9", 
                     "ควรติด (กิจการขนาดใหญ่)": "#2979FF"  
                 }
-                hover_data = ["ประเภทผู้ใช้ไฟ", "ค่าไฟก่อนติด (บาท/เดือน)", "ค่าไฟหลังติด (บาท/เดือน)", "คืนทุน (ปี)"]
+                # ซ่อน Latitude และ Longitude จาก Hover
+                hover_data = {
+                    "latitude": False,
+                    "longitude": False,
+                    "ประเภทผู้ใช้ไฟ": True,
+                    "ค่าไฟเฉลี่ย (บาท/เดือน)": True,
+                    "ค่าไฟเฉลี่ยหลังติด (บาท/เดือน)": True,
+                    "คืนทุน (ปี)": True,
+                    "โอกาสปิดการขาย": True
+                }
 
             # ตรวจสอบว่าพิกัดเป็น Lat/Lon ที่สลับแกนกันมาหรือไม่ (X ควรเป็น Lon ~100, Y ควรเป็น Lat ~13)
             if (map_df['longitude'].abs() < 200).all() and (map_df['latitude'].abs() < 200).all():
@@ -1632,8 +1783,20 @@ if df is not None:
                     center={"lat": 13.7367, "lon": 100.5231}, # บังคับให้แผนที่โฟกัสที่ประเทศไทยเป็นหลัก
                     zoom=5, height=550
                 )
-                fig_map.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
-                st.plotly_chart(fig_map, use_container_width=True, config={"scrollZoom": True})
+                fig_map.update_layout(
+                    mapbox_style="open-street-map", 
+                    margin={"r":0,"t":0,"l":0,"b":0},
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    legend=dict(
+                        title_text="", 
+                        bgcolor="rgba(255,255,255,0.8)",
+                        yanchor="top", 
+                        y=0.98, 
+                        xanchor="left", 
+                        x=0.02
+                    )
+                )
+                st.plotly_chart(fig_map, use_container_width=True, config={"scrollZoom": True, "displayModeBar": False})
                 
                 if len(valid_map) < len(map_df):
                     st.warning(f"ซ่อนจุดพิกัด {len(map_df) - len(valid_map):,} จุด เนื่องจากอยู่นอกเขตประเทศไทย หรือพิกัดผิดพลาด")
@@ -1665,16 +1828,24 @@ if df is not None:
         def eval_quick_status(row):
             avg_amt = row['avg_amt']
             avg_kwh = row['avg_kwh']
-            if pd.isna(avg_kwh) or avg_kwh <= 0 or pd.isna(avg_amt) or avg_amt < 3000: 
+            if pd.isna(avg_kwh) or avg_kwh <= 0 or pd.isna(avg_amt): 
                 return False
             
             u_type = str(row['user_type'])
             if "ชั่วคราว" in u_type:
                 return False
                 
+            if "กิจการขนาดใหญ่" in u_type and avg_amt < 30000: return False
+            if "กิจการขนาดกลาง" in u_type and avg_amt < 15000: return False
+            if "กิจการขนาดใหญ่" not in u_type and "กิจการขนาดกลาง" not in u_type and avg_amt < 3000: return False
+
             day_r = 0.5 if "บ้าน" in u_type else (0.7 if "กิจการ" in u_type else 0.85)
             
-            target_kw = (avg_kwh * day_r) / 120
+            if "บ้าน" in u_type: max_kw = 15.0
+            elif "กิจการขนาดใหญ่" in u_type or "กิจการเฉพาะอย่าง" in u_type: max_kw = 5000.0
+            else: max_kw = 150.0
+            
+            target_kw = min((avg_kwh * day_r) / 120, max_kw)
             panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
             actual_kw = panels * 0.55
             avg_rate = avg_amt / avg_kwh if avg_kwh > 0 else 4.5
@@ -1693,20 +1864,37 @@ if df is not None:
         not_recommended_customers = set(quick_summary[~quick_summary['should_install']][customer_col].astype(str))
         
         if len(customer_list) > 0:
+            # --- เพิ่มตัวกรองสถานะลูกค้า ---
+            filter_search_status = st.radio(
+                "ตัวกรองสถานะการแนะนำ:",
+                options=["แสดงทั้งหมด", "✅ ควรติด", "❌ ยังไม่คุ้ม"],
+                horizontal=True
+            )
+            
+            # กรองรายการหมายเลขผู้ใช้ไฟตามตัวกรองที่เลือก
+            display_customer_list = []
+            for cust in customer_list:
+                if filter_search_status == "✅ ควรติด" and cust in recommended_customers:
+                    display_customer_list.append(cust)
+                elif filter_search_status == "❌ ยังไม่คุ้ม" and cust in not_recommended_customers:
+                    display_customer_list.append(cust)
+                elif filter_search_status == "แสดงทั้งหมด":
+                    display_customer_list.append(cust)
+
             # ฟังก์ชันสำหรับจัดรูปแบบข้อความในช่องค้นหา (เพิ่มสัญลักษณ์สี)
             def format_customer_display(cust_no):
                 if cust_no == "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --":
                     return cust_no
                 if cust_no in recommended_customers:
-                    return f"{cust_no} (ควรติด)"
+                    return f"✅ {cust_no} (ควรติด)"
                 elif cust_no in not_recommended_customers:
-                    return f"{cust_no} (ยังไม่คุ้ม)"
-                return f"{cust_no} (ไม่มีข้อมูล)"
+                    return f"❌ {cust_no} (ยังไม่คุ้ม)"
+                return f"⚪ {cust_no} (ไม่มีข้อมูล)"
 
             # ใช้ selectbox ซึ่งสามารถคลิกแล้วพิมพ์ค้นหาตัวเลขได้เลย
             selected_customer = st.selectbox(
                 "พิมพ์เพื่อค้นหาหรือเลือกหมายเลขผู้ใช้ไฟ:", 
-                options=["-- โปรดเลือกหมายเลขผู้ใช้ไฟ --"] + customer_list,
+                options=["-- โปรดเลือกหมายเลขผู้ใช้ไฟ --"] + display_customer_list,
                 format_func=format_customer_display
             )
             
@@ -1734,10 +1922,19 @@ if df is not None:
                 cust_avg_kwh = cust_df['kwh_total'].mean()
                 user_type = cust_df['user_type_name'].iloc[0] if 'user_type_name' in cust_df.columns else "ไม่ระบุ"
                 
-                # 1. หาระยะเวลาใช้งานกลางวัน
-                if "บ้าน" in str(user_type): day_r = 0.5
-                elif "กิจการ" in str(user_type): day_r = 0.7
-                else: day_r = 0.85
+                # 1. หาระยะเวลาใช้งานกลางวันและขีดจำกัดขนาดติดตั้ง
+                if "บ้าน" in str(user_type): 
+                    day_r = 0.5
+                    max_kw_limit = 15.0
+                elif "กิจการ" in str(user_type): 
+                    day_r = 0.7
+                    if "ขนาดใหญ่" in str(user_type) or "เฉพาะอย่าง" in str(user_type):
+                        max_kw_limit = 5000.0
+                    else:
+                        max_kw_limit = 150.0
+                else: 
+                    day_r = 0.85
+                    max_kw_limit = 150.0
                 
                 # 2. ดึงพิกัดและข้อมูลสิ่งแวดล้อม (Real-time) สำหรับลูกค้ารายนี้
                 x_col = 'x_coord' if 'x_coord' in cust_df.columns else (cust_df.columns[6] if len(cust_df.columns) >= 8 else None)
@@ -1763,8 +1960,12 @@ if df is not None:
                     try:
                         aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=pm2_5"
                         w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=cloud_cover"
-                        pm25 = float(requests.get(aqi_url, timeout=2).json().get('current', {}).get('pm2_5', 20.0))
-                        cloud = float(requests.get(w_url, timeout=2).json().get('current', {}).get('cloud_cover', 20.0))
+                        req_aqi = requests.get(aqi_url, timeout=5)
+                        req_w = requests.get(w_url, timeout=5)
+                        if req_aqi.status_code == 200:
+                            pm25 = float(req_aqi.json().get('current', {}).get('pm2_5', 20.0))
+                        if req_w.status_code == 200:
+                            cloud = float(req_w.json().get('current', {}).get('cloud_cover', 20.0))
                     except:
                         pass
                         
@@ -1774,7 +1975,7 @@ if df is not None:
                 kwh_per_kw = 120 * eff_factor
                 
                 # 3. คำนวณความคุ้มค่า
-                target_kw = (cust_avg_kwh * day_r) / 120
+                target_kw = min((cust_avg_kwh * day_r) / 120, max_kw_limit)
                 panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
                 actual_kw = panels * 0.55
                 avg_rate = cust_avg_amt / cust_avg_kwh if cust_avg_kwh > 0 else 4.5
@@ -1785,15 +1986,20 @@ if df is not None:
                 
                 if actual_kw <= 3:
                     investment = 145000
+                    company_cost = actual_kw * 35000
                 elif actual_kw <= 5:
                     investment = 200000
+                    company_cost = actual_kw * 28000
                 elif actual_kw <= 10:
                     investment = 329000
+                    company_cost = actual_kw * 24000
                 elif actual_kw <= 15:
                     investment = 454900
+                    company_cost = actual_kw * 22000
                 else:
                     investment = max(550000, actual_kw * 27500)
-                company_cost = actual_kw * 30000
+                    company_cost = actual_kw * 20000
+                
                 company_profit = investment - company_cost
                 
                 payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
@@ -1999,24 +2205,31 @@ if df is not None:
         @st.cache_data(ttl=1800) # อัปเดตทุกครึ่งชั่วโมง
         def fetch_realtime_env(coords):
             import concurrent.futures
+            import time
             results = {}
             
-            # จำกัดพิกัดที่ไม่ซ้ำกันสูงสุด 100 จุด เพื่อป้องกัน API โดนบล็อก
-            if len(coords) > 100:
-                coords = coords[:100]
+            # ขยายลิมิตเป็น 200 จุด และป้องกัน API โดนบล็อก
+            if len(coords) > 200:
+                coords = coords[:200]
                 
             def fetch_single(lat, lon):
                 try:
+                    time.sleep(0.2) # หน่วงเวลาเล็กน้อยป้องกัน API บล็อก (Rate Limit 429)
                     aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=pm2_5"
                     w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=cloud_cover"
-                    pm25 = requests.get(aqi_url, timeout=2).json().get('current', {}).get('pm2_5', 20.0)
-                    cloud = requests.get(w_url, timeout=2).json().get('current', {}).get('cloud_cover', 20.0)
+                    
+                    req_aqi = requests.get(aqi_url, timeout=5)
+                    req_w = requests.get(w_url, timeout=5)
+                    
+                    pm25 = float(req_aqi.json().get('current', {}).get('pm2_5', 20.0)) if req_aqi.status_code == 200 else 20.0
+                    cloud = float(req_w.json().get('current', {}).get('cloud_cover', 20.0)) if req_w.status_code == 200 else 20.0
+                    
                     return (lat, lon, pm25, cloud)
                 except:
                     return (lat, lon, 20.0, 20.0) # ค่าเริ่มต้นกรณี API Error หรือ Timeout
 
-            # ดึงข้อมูลพร้อมกัน (Parallel Threading) เพื่อให้เสร็จไวขึ้น 5 เท่า
-            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            # ดึงข้อมูลพร้อมกันแบบ Parallel แต่อย่าให้ถี่เกินไป (ลดเหลือ 3 workers)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
                 futures = [executor.submit(fetch_single, lat, lon) for lat, lon in coords]
                 for future in concurrent.futures.as_completed(futures):
                     lat, lon, pm25, cloud = future.result()
@@ -2035,12 +2248,13 @@ if df is not None:
         # 4. ฟังก์ชันคำนวณผลกระทบต่อแผงโซล่าร์เซลล์
         def apply_env_impact(row):
             lat, lon = row.get('lat_r'), row.get('lon_r')
-            if pd.isna(lat) or pd.isna(lon): return pd.Series([20.0, 20.0, 2.0, 5.0])
+            if pd.isna(lat) or pd.isna(lon): return pd.Series([20.0, 20.0, 1.3, 3.0])
             data = env_data.get((lat, lon), {'pm25': 20.0, 'cloud': 20.0})
             pm = float(data['pm25']) if data['pm25'] is not None else 20.0
             cl = float(data['cloud']) if data['cloud'] is not None else 20.0
-            d_imp = min(pm / 10, 15.0) # ยิ่งฝุ่นเยอะ ประสิทธิภาพลด
-            l_imp = min(cl / 4, 25.0)  # ยิ่งเมฆเยอะ ความเข้มแสงยิ่งน้อย
+            # อิงความสมจริง: ฝุ่น 150 AQI ลดทอนแสงประมาณ 8%, เมฆบัง 100% กระทบค่าเฉลี่ยรายเดือนสูงสุด 15%
+            d_imp = min(pm / 15.0, 8.0) 
+            l_imp = cl * 0.15  
             return pd.Series([pm, cl, d_imp, l_imp])
 
         # ผสานข้อมูลสิ่งแวดล้อมเข้าตาราง
@@ -2062,42 +2276,56 @@ if df is not None:
                 
         cust_summary['day_ratio'] = cust_summary['user_type_name'].apply(get_day_ratio)
 
-        def recommend_package(avg_bill):
-            if avg_bill < 3000:
-                return "3 kW"
-            elif avg_bill < 7000:
-                return "5 kW"
-            elif avg_bill < 15000:
-                return "10 kW"
+        def get_max_kw_limit(user_type):
+            user_type_str = str(user_type)
+            if "บ้าน" in user_type_str:
+                return 15.0
+            elif "กิจการขนาดใหญ่" in user_type_str or "กิจการเฉพาะอย่าง" in user_type_str:
+                return 5000.0
             else:
-                return "20+ kW"
+                return 150.0
                 
-        cust_summary['recommended_package'] = cust_summary['avg_amt_per_month'].apply(recommend_package)
+        cust_summary['max_kw_limit'] = cust_summary['user_type_name'].apply(get_max_kw_limit)
 
-        # สมมติฐาน: ใช้ไฟกลางวันตามสัดส่วน (บ้าน 50%, กิจการ 70%, อื่นๆ 85%), 1kW ผลิตไฟ 120 หน่วย/เดือน, แผงละ 550W (0.55kW)
+        def recommend_package(kw):
+            if kw <= 3:
+                return "3 kW"
+            elif kw <= 5:
+                return "5 kW"
+            elif kw <= 10:
+                return "10 kW"
+            elif kw <= 15:
+                return "15 kW"
+            else:
+                return ">15 kW"
+
+        # คำนวณแบบสมจริง: ฐาน 135 kWh/kW หัก System Loss 15% และหักปัจจัยสิ่งแวดล้อม
+        cust_summary['efficiency_factor'] = (1 - 0.15) * (1 - (cust_summary['dust_impact'] / 100)) * (1 - (cust_summary['light_impact'] / 100))
+        cust_summary['kwh_per_kw_month_adjusted'] = 135.0 * cust_summary['efficiency_factor']
+
+        # จำกัดเป้าหมายการติดไว้แค่ปริมาณที่ใช้ตอนกลางวัน (On-Grid)
         cust_summary['target_kwh'] = cust_summary['avg_kwh_per_month'] * cust_summary['day_ratio']
-        cust_summary['recommended_kw'] = cust_summary['target_kwh'] / 120
-        
-        # ปรับลดประสิทธิภาพการผลิตจากปัจจัยสิ่งแวดล้อม (ดึง API มาแล้ว)
-        cust_summary['efficiency_factor'] = (1 - (cust_summary['dust_impact'] / 100)) * (1 - (cust_summary['light_impact'] / 100))
-        cust_summary['kwh_per_kw_month_adjusted'] = 120 * cust_summary['efficiency_factor']
+        # ใช้ 105 เป็นค่าตั้งต้นในการหาขนาด kW ที่เหมาะสม (เพื่อไม่ให้ติดตั้ง Over size) และจำกัดตามประเภทสถานที่
+        cust_summary['recommended_kw'] = np.minimum(cust_summary['target_kwh'] / 105.0, cust_summary['max_kw_limit'])
 
         # คำนวณจำนวนแผงและปัดขึ้นเป็นจำนวนเต็ม
         cust_summary['panels_needed'] = np.ceil(cust_summary['recommended_kw'] / 0.55)
         # ปรับขนาด kW ให้ตรงกับจำนวนแผงที่ต้องติดจริง
         cust_summary['actual_kw'] = cust_summary['panels_needed'] * 0.55
         
+        cust_summary['recommended_package'] = cust_summary['actual_kw'].apply(recommend_package)
+        
         # หาอัตราค่าไฟเฉลี่ยของบ้านแต่ละหลัง (บาท/หน่วย) ตามข้อมูลจริง
         cust_summary['avg_rate'] = np.where(cust_summary['avg_kwh_per_month'] > 0, 
                                             cust_summary['avg_amt_per_month'] / cust_summary['avg_kwh_per_month'], 
                                             4.5)
         
-        # คำนวณหน่วยไฟที่ผลิตได้จริงและประหยัดได้
+        # คำนวณหน่วยไฟที่ผลิตได้จริงและประหยัดได้ (ประหยัดได้จริงไม่เกินค่าไฟช่วงกลางวัน)
         cust_summary['solar_kwh_produced'] = cust_summary['actual_kw'] * cust_summary['kwh_per_kw_month_adjusted']
-        cust_summary['kwh_saved'] = np.minimum(cust_summary['solar_kwh_produced'], cust_summary['avg_kwh_per_month'])
+        cust_summary['kwh_saved'] = np.minimum(cust_summary['solar_kwh_produced'], cust_summary['target_kwh'])
         
-        # คำนวณส่วนที่ประหยัดได้ (ผลิตได้ตามประสิทธิภาพที่ปรับแล้ว * อัตราค่าไฟ) และไม่ให้เกินค่าไฟเดิม
-        cust_summary['monthly_savings'] = cust_summary['solar_kwh_produced'] * cust_summary['avg_rate']
+        # คำนวณส่วนที่ประหยัดได้ (อิงจากหน่วยไฟที่ประหยัดได้จริง * อัตราค่าไฟ) และไม่ให้เกินค่าไฟเดิม
+        cust_summary['monthly_savings'] = cust_summary['kwh_saved'] * cust_summary['avg_rate']
         cust_summary['monthly_savings'] = np.minimum(cust_summary['monthly_savings'], cust_summary['avg_amt_per_month'])
         
         cust_summary['cost_after_solar'] = cust_summary['avg_amt_per_month'] - cust_summary['monthly_savings']
@@ -2107,8 +2335,9 @@ if df is not None:
         pkg_vals = [145000, 200000, 329000, 454900]
         cust_summary['investment'] = np.select(pkg_conds, pkg_vals, default=np.maximum(550000, cust_summary['actual_kw'] * 27500))
         
-        # คำนวณต้นทุนบริษัทและกำไร (สมมติต้นทุนเฉลี่ย 30,000 บาท/kW)
-        cust_summary['company_cost'] = cust_summary['actual_kw'] * 30000
+        # คำนวณต้นทุนบริษัทและกำไร (ปรับให้สมจริงตาม Economy of Scale)
+        cost_vals = [cust_summary['actual_kw'] * 35000, cust_summary['actual_kw'] * 28000, cust_summary['actual_kw'] * 24000, cust_summary['actual_kw'] * 22000]
+        cust_summary['company_cost'] = np.select(pkg_conds, cost_vals, default=cust_summary['actual_kw'] * 20000)
         cust_summary['company_profit'] = cust_summary['investment'] - cust_summary['company_cost']
         
         cust_summary['payback_years'] = np.where(cust_summary['monthly_savings'] > 0,
@@ -2116,11 +2345,23 @@ if df is not None:
                                                  99)
         
         # เงื่อนไขควรติด: ค่าไฟเฉลี่ย >= 3000 และคืนทุน <= 7 ปี (และต้องไม่ใช่ไฟฟ้าชั่วคราว)
-        cust_summary['should_install'] = np.where(
-            (cust_summary['avg_amt_per_month'] >= 3000) & (cust_summary['payback_years'] <= 7) & (~cust_summary['user_type_name'].str.contains('ชั่วคราว', na=False)),
-            "ควรติด",
-            "ยังไม่คุ้ม"
-        )
+        def eval_table_status(row):
+            if row['payback_years'] > 7: return "ยังไม่คุ้ม"
+            
+            avg_bill = row['avg_amt_per_month']
+            u_type = str(row.get('user_type_name', ''))
+            
+            if "ชั่วคราว" in u_type: return "ยังไม่คุ้ม"
+            
+            if "กิจการขนาดใหญ่" in u_type:
+                if avg_bill >= 30000: return "ควรติด"
+            elif "กิจการขนาดกลาง" in u_type:
+                if avg_bill >= 15000: return "ควรติด"
+            else:
+                if avg_bill >= 3000: return "ควรติด"
+            return "ยังไม่คุ้ม"
+            
+        cust_summary['should_install'] = cust_summary.apply(eval_table_status, axis=1)
         
         # จัดคอลัมน์และเปลี่ยนชื่อเพื่อแสดงผล
         display_df = cust_summary[[
@@ -2157,10 +2398,8 @@ if df is not None:
         recommended_cust = len(display_df[display_df['คำแนะนำ'] == 'ควรติด'])
         pct_recommended = (recommended_cust / total_cust * 100) if total_cust > 0 else 0
         
-        profitable_cust = len(display_df[(display_df['คำแนะนำ'] == 'ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)])
-        
         st.markdown("##### สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
-        mcol1, mcol2, mcol3, mcol4 = st.columns(4)
+        mcol1, mcol2, mcol3 = st.columns(3)
         with mcol1:
             with st.container(border=True):
                 st.metric("ลูกค้าที่ประเมินทั้งหมด", f"{total_cust:,} ราย")
@@ -2170,22 +2409,13 @@ if df is not None:
         with mcol3:
             with st.container(border=True):
                 st.metric("คิดเป็นสัดส่วนเป้าหมาย", f"{pct_recommended:,.1f}%")
-        with mcol4:
-            with st.container(border=True):
-                st.metric("ได้กำไร (ในกลุ่มที่ควรติด)", f"{profitable_cust:,} ราย")
 
-        with st.expander("อ่านคำอธิบาย: เกณฑ์ลูกค้าเป้าหมาย และ ลูกค้าเป้าหมายที่ทำกำไร"):
+        with st.expander("อ่านคำอธิบาย: เกณฑ์ลูกค้าเป้าหมาย"):
             st.markdown("""
-            **1. เกณฑ์เป้าหมายทั่วไป (ควรติดโซล่าร์เซลล์):**
+            **เกณฑ์เป้าหมายทั่วไป (ควรติดโซล่าร์เซลล์):**
             - ค่าไฟเฉลี่ยรายเดือน **>= 3,000 บาท**
             - ระยะเวลาคืนทุนประเมิน **<= 7 ปี**
             - ไม่เป็นผู้ใช้ไฟฟ้าแบบชั่วคราว
-            
-            **2. เกณฑ์เป้าหมายที่ทำกำไร (Profitable Targets):**
-            - เป็นลูกค้าที่ผ่านเกณฑ์ "ควรติดโซล่าร์เซลล์" ในข้อ 1
-            - และบริษัทประเมินแล้วว่าได้ **"กำไร > 0 บาท"** 
-            - *(สูตรประเมิน: ราคาขายแพ็กเกจ - ต้นทุนของบริษัท โดยบริษัทตั้งต้นทุนเหมาไว้ที่ 30,000 บาท/kW)*
-            - **ข้อสังเกต:** ลูกค้าที่ประเมินว่าต้องติดแพ็กเกจขนาด **เกิน 15 kW** จะถูกคัดออกจากกลุ่มทำกำไร เนื่องจากราคาขายเฉลี่ยของแพ็กเกจใหญ่คือ 27,500 บาท/kW ซึ่งต่ำกว่าต้นทุนนั่นเอง
             """)
 
         # --- ตัวกรองข้อมูลสำหรับตาราง ---
@@ -2201,13 +2431,6 @@ if df is not None:
                     horizontal=True,
                     index=1 # ตั้งค่าเริ่มต้นให้เลือกโชว์เฉพาะ 'ควรติด' 
                 )
-                
-                min_bill = float(display_df['ค่าไฟเดิม (บาท/เดือน)'].min())
-                max_bill = float(display_df['ค่าไฟเดิม (บาท/เดือน)'].max())
-                if min_bill < max_bill:
-                    filter_bill = st.slider("ช่วงค่าไฟเดิม (บาท/เดือน):", min_value=min_bill, max_value=max_bill, value=(min_bill, max_bill), step=100.0)
-                else:
-                    filter_bill = (min_bill, max_bill)
 
             with fcol2:
                 unique_types = display_df['ประเภทผู้ใช้ไฟ'].unique().tolist()
@@ -2216,30 +2439,12 @@ if df is not None:
                     options=unique_types,
                     default=unique_types
                 )
-                
-                min_pb = float(display_df['คืนทุน (ปี)'].min())
-                max_pb = float(display_df['คืนทุน (ปี)'].max())
-                if min_pb < max_pb:
-                    filter_payback = st.slider("ระยะเวลาคืนทุน (ปี):", min_value=min_pb, max_value=max_pb, value=(min_pb, max_pb), step=0.5)
-                else:
-                    filter_payback = (min_pb, max_pb)
-                    
             # นำตัวกรองทั้งหมดมาตัดข้อมูลในตาราง
             if filter_status != "แสดงทั้งหมด":
                 display_df = display_df[display_df['คำแนะนำ'] == filter_status]
                 
             if filter_user_types:
                 display_df = display_df[display_df['ประเภทผู้ใช้ไฟ'].isin(filter_user_types)]
-                
-            display_df = display_df[
-                (display_df['ค่าไฟเดิม (บาท/เดือน)'] >= filter_bill[0]) & 
-                (display_df['ค่าไฟเดิม (บาท/เดือน)'] <= filter_bill[1])
-            ]
-            
-            display_df = display_df[
-                (display_df['คืนทุน (ปี)'] >= filter_payback[0]) & 
-                (display_df['คืนทุน (ปี)'] <= filter_payback[1])
-            ]
             
             display_df = display_df.reset_index(drop=True)
 
@@ -2281,7 +2486,21 @@ if df is not None:
 
         hot_leads_df = profitable_df[profitable_df['โอกาสปิดการขาย'] == "โอกาสสูงมาก (Hot Lead)"] if not profitable_df.empty else pd.DataFrame()
 
-        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (ทำกำไรได้ {len(profitable_df):,} ราย | **เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
+        st.success(f"**จำนวนบ้านที่ควรติดโซล่าร์เซลล์ทั้งหมด:** {len(display_df):,} ราย (**เป็น Hot Lead ปิดการขายได้ง่าย {len(hot_leads_df):,} ราย**)")
+
+        # แปลงคอลัมน์ประหยัดเงินให้แสดงเป็นช่วงราคา (Range +/- 10%) พร้อมปัดเป็นเลขกลมๆ (หลักร้อย)
+        def format_savings_range(val):
+            if pd.isna(val) or val <= 0:
+                return "฿ 0"
+            min_val = round(val * 0.9, -2)
+            max_val = round(val * 1.1, -2)
+            return f"฿ {min_val:,.0f} - {max_val:,.0f}"
+
+        display_df['ประหยัดเงิน (บาท/เดือน)'] = display_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
+        if not profitable_df.empty:
+            profitable_df['ประหยัดเงิน (บาท/เดือน)'] = profitable_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
+        if not hot_leads_df.empty:
+            hot_leads_df['ประหยัดเงิน (บาท/เดือน)'] = hot_leads_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
 
         # ใช้ st.column_config เพื่อปรับแต่งตารางให้สวยงามและดูเป็นมืออาชีพมากขึ้น
         table_config = {
@@ -2289,30 +2508,41 @@ if df is not None:
             "ประเภทผู้ใช้ไฟ": st.column_config.TextColumn("ประเภทผู้ใช้ไฟ"),
             "คำแนะนำ": st.column_config.TextColumn("คำแนะนำ"),
             "โอกาสปิดการขาย": st.column_config.TextColumn("โอกาสปิดการขาย"),
-            "ฝุ่น PM2.5 (μg/m³)": st.column_config.NumberColumn("ฝุ่น PM2.5", format="%.1f"),
+            "ฝุ่น PM2.5 (μg/m³)": st.column_config.Column("ฝุ่น PM2.5"),
             "ความเข้มแสง (%)": st.column_config.ProgressColumn("ความเข้มแสง (%)", format="%f%%", min_value=0, max_value=100),
-            "ใช้ไฟเดิม (kWh/เดือน)": st.column_config.NumberColumn("ใช้ไฟเดิม (kWh/เดือน)", format="%.2f"),
-            "ประหยัดไฟ (kWh/เดือน)": st.column_config.NumberColumn("ประหยัดไฟ (kWh/เดือน)", format="%.2f"),
-            "ค่าไฟเดิม (บาท/เดือน)": st.column_config.NumberColumn("ค่าไฟเดิม", format="฿ %.2f"),
-            "ประหยัดเงิน (บาท/เดือน)": st.column_config.NumberColumn("ประหยัดเงิน", format="฿ %.2f"),
-            "ค่าไฟสุทธิ (บาท/เดือน)": st.column_config.NumberColumn("ค่าไฟสุทธิ", format="฿ %.2f"),
-            "ขนาดติดตั้ง (kW)": st.column_config.NumberColumn("ขนาด (kW)", format="%.2f"),
+            "ใช้ไฟเดิม (kWh/เดือน)": st.column_config.Column("ใช้ไฟเดิม (kWh/เดือน)"),
+            "ประหยัดไฟ (kWh/เดือน)": st.column_config.Column("ประหยัดไฟ (kWh/เดือน)"),
+            "ค่าไฟเดิม (บาท/เดือน)": st.column_config.Column("ค่าไฟเดิม"),
+            "ประหยัดเงิน (บาท/เดือน)": st.column_config.TextColumn("ประหยัดเงิน (ประมาณ)"),
+            "ค่าไฟสุทธิ (บาท/เดือน)": st.column_config.Column("ค่าไฟสุทธิ"),
+            "ขนาดติดตั้ง (kW)": st.column_config.Column("ขนาด (kW)"),
             "แพ็กเกจที่แนะนำ": st.column_config.TextColumn("แพ็กเกจ"),
-            "จำนวนแผง (แผงละ 550W)": st.column_config.NumberColumn("แผง", format="%d"),
-            "ราคาขายแพ็กเกจ (บาท)": st.column_config.NumberColumn("ราคาขายแพ็กเกจ", format="฿ %.0f"),
-            "กำไรบริษัท (บาท)": st.column_config.NumberColumn("กำไรบริษัท", format="฿ %.0f"),
+            "จำนวนแผง (แผงละ 550W)": st.column_config.Column("แผง"),
+            "ราคาขายแพ็กเกจ (บาท)": st.column_config.Column("ราคาขายแพ็กเกจ"),
+            "กำไรบริษัท (บาท)": st.column_config.Column("กำไรบริษัท"),
             "คืนทุน (ปี)": st.column_config.ProgressColumn("คืนทุน (ปี)", format="%.1f", min_value=0, max_value=10),
         }
         
+        style_format = {
+            "ฝุ่น PM2.5 (μg/m³)": "{:,.1f}",
+            "ใช้ไฟเดิม (kWh/เดือน)": "{:,.0f}",
+            "ประหยัดไฟ (kWh/เดือน)": "{:,.0f}",
+            "ค่าไฟเดิม (บาท/เดือน)": "฿ {:,.0f}",
+            "ค่าไฟสุทธิ (บาท/เดือน)": "฿ {:,.0f}",
+            "ขนาดติดตั้ง (kW)": "{:,.2f}",
+            "จำนวนแผง (แผงละ 550W)": "{:,.0f}",
+            "ราคาขายแพ็กเกจ (บาท)": "฿ {:,.0f}",
+            "กำไรบริษัท (บาท)": "฿ {:,.0f}"
+        }
+        
         # สร้าง Tabs เพื่อแยกตารางการแสดงผล
-        tab_all, tab_profit, tab_hot = st.tabs([
+        tab_all, tab_hot = st.tabs([
             f"บ้านที่ควรติดทั้งหมด ({len(display_df)} ราย)", 
-            f"เป้าหมายทำกำไรได้ ({len(profitable_df)} ราย)",
             f"โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)"
         ])
         
         with tab_all:
-            st.dataframe(display_df, column_config=table_config, hide_index=True, use_container_width=True)
+            st.dataframe(display_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
             # --- ส่วนปุ่ม Export ไฟล์ Excel (ทั้งหมด) ---
             st.markdown("<br>", unsafe_allow_html=True)
             if not display_df.empty:
@@ -2337,43 +2567,12 @@ if df is not None:
                         mime="text/csv",
                         key="btn_dl_all_csv"
                     )
-        
-        with tab_profit:
-            st.dataframe(profitable_df, column_config=table_config, hide_index=True, use_container_width=True)
-            # --- ส่วนปุ่ม Export ไฟล์ Excel (ทำกำไร) ---
-            st.markdown("<br>", unsafe_allow_html=True)
-            if not profitable_df.empty:
-                buffer_profit = io.BytesIO()
-                try:
-                    with pd.ExcelWriter(buffer_profit, engine='xlsxwriter') as writer:
-                        profitable_df.to_excel(writer, index=False, sheet_name='Profitable_Targets')
-                    
-                    st.download_button(
-                        label="ดาวน์โหลดรายชื่อเป้าหมายทำกำไร (Excel)",
-                        data=buffer_profit.getvalue(),
-                        file_name="Profitable_Target_Customers.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="primary",
-                        key="btn_dl_profit_excel"
-                    )
-                except ImportError:
-                    csv_data_profit = profitable_df.to_csv(index=False, encoding='utf-8-sig')
-                    st.download_button(
-                        label="ดาวน์โหลดรายชื่อเป้าหมายทำกำไร (CSV)",
-                        data=csv_data_profit,
-                        file_name="Profitable_Target_Customers.csv",
-                        mime="text/csv",
-                        type="primary",
-                        key="btn_dl_profit_csv"
-                    )
-            else:
-                st.info("ไม่มีข้อมูลลูกค้าที่ตรงตามเงื่อนไขทำกำไร ให้ดาวน์โหลดในขณะนี้")
                 
         with tab_hot:
             st.markdown("#### กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
-            st.markdown("ลูกค้ากลุ่มนี้คือ **'เพชรยอดมงกุฎ' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) และมียอดประหยัดเงินต่อเดือนสูง ทำให้ลูกค้ารู้สึกถึงความคุ้มค่าและตัดสินใจได้ง่ายขึ้น")
+            st.markdown("ลูกค้ากลุ่มนี้คือ **'กลุ่มเป้าหมายหลัก' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) และมียอดประหยัดเงินต่อเดือนสูง ทำให้ลูกค้ารู้สึกถึงความคุ้มค่าและตัดสินใจได้ง่ายขึ้น")
             
-            st.dataframe(hot_leads_df, column_config=table_config, hide_index=True, use_container_width=True)
+            st.dataframe(hot_leads_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             if not hot_leads_df.empty:
@@ -2404,10 +2603,12 @@ if df is not None:
                 st.info("ไม่มีข้อมูลลูกค้ากลุ่ม Hot Leads ในขณะนี้")
         
         st.caption("""
-        **สมมติฐานการคำนวณจากข้อมูลการใช้ไฟจริง (อ้างอิงตามมาตรฐานไทย):**
-            - ประเมินให้ระบบโซล่าร์เซลล์ครอบคลุมการใช้ไฟช่วงกลางวันตามพฤติกรรม (บ้านอยู่อาศัย 50%, กิจการ 70%, อื่นๆ 85%)
-            - ใช้แผงโซล่าร์เซลล์ขนาด 550W (0.55 kW)
-            - 1 kW ผลิตไฟฟ้าได้เฉลี่ย 120 หน่วย/เดือน **(ก่อนหักผลกระทบจากฝุ่นและความเข้มแสง)**
+        **สมมติฐานการคำนวณแบบอิงค่าความเป็นจริง (Realistic Simulation):**
+            - ประเมินให้ระบบโซลาร์เซลล์ขนาดเหมาะสม **ครอบคลุมเฉพาะการใช้ไฟช่วงกลางวัน** ป้องกันไฟเหลือทิ้งแบบ On-Grid (บ้านอยู่อาศัย 50%, กิจการ 70%, อื่นๆ 85%)
+            - ใช้แผงโซลาร์เซลล์ขนาด 550W (0.55 kW)
+            - 1 kW ผลิตไฟฟ้าอุดมคติได้ **135 หน่วย/เดือน** (อิงแดดเฉลี่ยไทย 4.5 ชม./วัน) 
+            - หักค่า **System Loss ถาวร 15%** (การสูญเสียในสายไฟ/อินเวอร์เตอร์)
+            - หักผลกระทบจากฝุ่นและเมฆแบบ Real-Time (ดึงค่าเฉลี่ยฝุ่นและเมฆมาประเมินการบดบังแสงให้สมจริงยิ่งขึ้น) ทำให้ค่าผลิตจริงจะเฉลี่ยอยู่ที่ราวๆ 100-110 หน่วย/เดือน
         - **ราคาติดตั้งอ้างอิงจาก PEA Solar (Standard Package):**
             - ขนาดไม่เกิน 3 kW: ~48,333 บาท/kW (แพ็กเกจ 145,000 บาท)
             - ขนาด 3 - 5 kW: 40,000 บาท/kW (แพ็กเกจ 200,000 บาท)
