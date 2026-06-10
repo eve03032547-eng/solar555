@@ -1688,17 +1688,24 @@ if df is not None:
                 map_summary['คืนทุน (ปี)'] = np.round(payback_years, 1)
                 map_summary['โอกาสปิดการขาย'] = np.where(map_summary['is_hot_lead'], "🔥 สูงมาก (Hot Lead)", "ทั่วไป")
 
-                # กรองให้เหลือเฉพาะเป้าหมายที่ควรเสนอโครงการ (ควรติดโซล่าร์เซลล์)
-                map_summary = map_summary[map_summary['สถานะ'] != "ยังไม่คุ้มทุน"]
-                if show_only_hot_leads:
-                    map_summary = map_summary[map_summary['is_hot_lead']]
+                selected_cust_state = st.session_state.get("selected_customer_box", "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --")
+                
+                if selected_cust_state != "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --":
+                    # ถ้ามีการค้นหา ให้แสดงเฉพาะลูกค้ารายนั้นบนแผนที่ (ไม่สนใจสถานะว่าคุ้มหรือไม่)
+                    map_summary = map_summary[map_summary[customer_col].astype(str) == selected_cust_state]
+                else:
+                    # ถ้าไม่ได้ค้นหา ให้กรองเอาเฉพาะกลุ่มเป้าหมายที่ควรติด
+                    map_summary = map_summary[map_summary['สถานะ'] != "ยังไม่คุ้มทุน"]
+                    if show_only_hot_leads:
+                        map_summary = map_summary[map_summary['is_hot_lead']]
 
                 map_df = map_summary
                 color_col = 'สถานะ'
                 color_map = {
                     "ควรติด (บ้าน/ขนาดเล็ก)": "#00E676", 
                     "ควรติด (กิจการขนาดกลาง)": "#D500F9", 
-                    "ควรติด (กิจการขนาดใหญ่)": "#2979FF"  
+                    "ควรติด (กิจการขนาดใหญ่)": "#2979FF",
+                    "ยังไม่คุ้มทุน": "#FF5252" # สีแดงสำหรับคนที่ยังไม่คุ้มกรณีค้นหาเจาะจง
                 }
                 # ซ่อน Latitude และ Longitude จาก Hover
                 hover_data = {
@@ -1739,6 +1746,17 @@ if df is not None:
             valid_map = map_df[(map_df['latitude'].between(5, 21)) & (map_df['longitude'].between(97, 106))]
             
             if not valid_map.empty:
+                selected_cust_state = st.session_state.get("selected_customer_box", "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --")
+                
+                # กำหนดระดับการซูมและจุดศูนย์กลางแผนที่
+                if selected_cust_state != "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --":
+                    map_center = {"lat": valid_map['latitude'].mean(), "lon": valid_map['longitude'].mean()}
+                    zoom_level = 16
+                    st.success(f"📍 แผนที่โฟกัสพิกัดของหมายเลขผู้ใช้ไฟ: {selected_cust_state}")
+                else:
+                    map_center = {"lat": 13.7367, "lon": 100.5231} # บังคับให้แผนที่โฟกัสที่ประเทศไทยเป็นหลัก
+                    zoom_level = 5
+
                 # ใช้ Plotly เพื่อวาดแผนที่แบบมีรายละเอียดภาพถ่ายถนน (OpenStreetMap) 
                 fig_map = px.scatter_mapbox(
                     valid_map, 
@@ -1749,8 +1767,8 @@ if df is not None:
                     color=color_col,
                     color_discrete_map=color_map,
                     color_discrete_sequence=["#FF5722"] if not color_col else None,
-                    center={"lat": 13.7367, "lon": 100.5231}, # บังคับให้แผนที่โฟกัสที่ประเทศไทยเป็นหลัก
-                    zoom=5, height=550
+                    center=map_center,
+                    zoom=zoom_level, height=550
                 )
                 fig_map.update_layout(
                     mapbox_style="open-street-map", 
@@ -1804,25 +1822,38 @@ if df is not None:
             if "ชั่วคราว" in u_type:
                 return False
                 
-            if "กิจการขนาดใหญ่" in u_type and avg_amt < 30000: return False
-            if "กิจการขนาดกลาง" in u_type and avg_amt < 15000: return False
-            if "กิจการขนาดใหญ่" not in u_type and "กิจการขนาดกลาง" not in u_type and avg_amt < 3000: return False
-
             day_r = 0.5 if "บ้าน" in u_type else (0.7 if "กิจการ" in u_type else 0.85)
             
-            target_kw = (avg_kwh * day_r) / 120
-            panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
+            # อิงสูตรคำนวณเดียวกับตารางหลัก
+            target_kwh = avg_kwh * day_r
+            recommended_kw = target_kwh / 105.0
+            panels = np.ceil(recommended_kw / 0.55) if recommended_kw > 0 else 0
             actual_kw = panels * 0.55
             avg_rate = avg_amt / avg_kwh if avg_kwh > 0 else 4.5
             
-            # ใช้ประสิทธิภาพ 93.1% เสมือนถูกหักลบจากสภาพอากาศเริ่มต้น เพื่อให้ตรงกับรายละเอียดด้านใน
-            solar_produced = actual_kw * (120 * 0.931)
-            kwh_saved = min(solar_produced, avg_kwh)
+            # ใช้ค่าประเมินเฉลี่ยจากตารางหลัก (ฝุ่น 25.5, เมฆ 30%) = ได้ประสิทธิภาพ ~107.7 หน่วย/kW/เดือน
+            solar_produced = actual_kw * 107.7
+            kwh_saved = min(solar_produced, target_kwh)
             monthly_savings = min(kwh_saved * avg_rate, avg_amt)
             investment = 145000 if actual_kw <= 3 else (200000 if actual_kw <= 5 else (329000 if actual_kw <= 10 else (454900 if actual_kw <= 15 else max(550000, actual_kw * 27500))))
             payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
             
-            return payback <= 7
+            if payback > 7: return False
+            
+            is_special = False
+            if "บ้าน" in u_type and actual_kw > 15: is_special = True
+            elif "กิจการขนาดใหญ่" in u_type and actual_kw > 5000: is_special = True
+            elif "กิจการขนาดใหญ่" not in u_type and "บ้าน" not in u_type and actual_kw > 150: is_special = True
+            
+            if is_special:
+                return payback <= 6 and avg_amt >= 20000
+                
+            if "กิจการขนาดใหญ่" in u_type:
+                return avg_amt >= 30000
+            elif "กิจการขนาดกลาง" in u_type:
+                return avg_amt >= 15000
+            else:
+                return avg_amt >= 3000
 
         quick_summary['should_install'] = quick_summary.apply(eval_quick_status, axis=1)
         recommended_customers = set(quick_summary[quick_summary['should_install']][customer_col].astype(str))
@@ -1860,7 +1891,8 @@ if df is not None:
             selected_customer = st.selectbox(
                 "พิมพ์เพื่อค้นหาหรือเลือกหมายเลขผู้ใช้ไฟ:", 
                 options=["-- โปรดเลือกหมายเลขผู้ใช้ไฟ --"] + display_customer_list,
-                format_func=format_customer_display
+                format_func=format_customer_display,
+                key="selected_customer_box"
             )
             
             if selected_customer != "-- โปรดเลือกหมายเลขผู้ใช้ไฟ --":
@@ -1914,35 +1946,41 @@ if df is not None:
                 pm25, cloud = 20.0, 20.0
                 if lat != 0.0 and lon != 0.0:
                     try:
-                        owm_api_key = "0f5d49af1e876c2b86df0df789f5f02b"
-                        aqi_url = f"https://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={owm_api_key}"
-                        w_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={owm_api_key}"
-                        req_aqi = requests.get(aqi_url, timeout=5)
-                        req_w = requests.get(w_url, timeout=5)
-                        if req_aqi.status_code == 200:
-                            pm25 = float(req_aqi.json().get('list', [{}])[0].get('components', {}).get('pm2_5', 20.0))
-                        else:
-                            print(f"API Error (AQI): {req_aqi.status_code} - {req_aqi.text}")
-                        if req_w.status_code == 200:
-                            cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
-                        else:
-                            print(f"API Error (Weather): {req_w.status_code} - {req_w.text}")
-                    except Exception as e:
-                        print(f"API Request Exception: {e}")
+                        # --- ใส่ API Key ของคุณตรงนี้ ---
+                        weather_api_key = "a652cc2fd3c54d61917130948261006"
                         
-                d_imp = min(pm25 / 10, 15.0)
-                l_imp = min(cloud / 4, 25.0)
-                eff_factor = (1 - (d_imp / 100)) * (1 - (l_imp / 100))
-                kwh_per_kw = 120 * eff_factor
+                        if weather_api_key != "YOUR_WEATHERAPI_KEY":
+                            api_url = f"https://api.weatherapi.com/v1/current.json?key={weather_api_key}&q={lat},{lon}&aqi=yes"
+                            req = requests.get(api_url, timeout=7)
+                            
+                            if req.status_code == 200:
+                                data = req.json()
+                                current_data = data.get('current', {})
+                                cloud = float(current_data.get('cloud', 20.0))
+                                air_quality_data = current_data.get('air_quality', {})
+                                pm25 = float(air_quality_data.get('pm2_5', 20.0))
+                            else:
+                                print(f"API Error (WeatherAPI): {req.status_code} - {req.text}")
+                        else:
+                            print("WeatherAPI key not provided in individual search.")
+                    except Exception as e:
+                        print(f"API Request Exception (WeatherAPI): {e}")
+                        
+                # ใช้สูตรผลกระทบสิ่งแวดล้อมเดียวกับตารางหลัก
+                d_imp = min(pm25 / 15.0, 8.0)
+                l_imp = cloud * 0.15
+                eff_factor = (1 - 0.15) * (1 - (d_imp / 100)) * (1 - (l_imp / 100))
+                kwh_per_kw = 135.0 * eff_factor
                 
-                # 3. คำนวณความคุ้มค่า
-                target_kw = (cust_avg_kwh * day_r) / 120
-                panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
+                # 3. คำนวณความคุ้มค่าให้ตรงกับตารางหลัก
+                target_kwh = cust_avg_kwh * day_r
+                recommended_kw = target_kwh / 105.0
+                panels = np.ceil(recommended_kw / 0.55) if recommended_kw > 0 else 0
                 actual_kw = panels * 0.55
                 avg_rate = cust_avg_amt / cust_avg_kwh if cust_avg_kwh > 0 else 4.5
                 
                 solar_produced = actual_kw * kwh_per_kw
-                kwh_saved = min(solar_produced, cust_avg_kwh)
+                kwh_saved = min(solar_produced, target_kwh)
                 monthly_savings = min(kwh_saved * avg_rate, cust_avg_amt)
                 
                 if actual_kw <= 3:
@@ -1962,15 +2000,34 @@ if df is not None:
                     company_cost = actual_kw * 20000
                 
                 company_profit = investment - company_cost
-                
                 payback = investment / (monthly_savings * 12) if monthly_savings > 0 else 99
                 
-                if cust_avg_amt >= 3000 and payback <= 7:
-                    status_text = "ควรติดโซล่าร์เซลล์ (คุ้มทุนเหมาะสม)"
+                # ตรวจสอบสถานะและเกณฑ์เหมือนตารางหลัก
+                is_recommended = False
+                status_text = "ยังไม่แนะนำ (ใช้ไฟน้อยไปหรือคืนทุนช้า)"
+                
+                if payback <= 7 and "ชั่วคราว" not in str(user_type):
+                    is_special = False
+                    if "บ้าน" in str(user_type) and actual_kw > 15: is_special = True
+                    elif "กิจการขนาดใหญ่" in str(user_type) and actual_kw > 5000: is_special = True
+                    elif "กิจการขนาดใหญ่" not in str(user_type) and "บ้าน" not in str(user_type) and actual_kw > 150: is_special = True
+                    
+                    if is_special:
+                        if payback <= 6 and cust_avg_amt >= 20000:
+                            is_recommended = True
+                            status_text = "ควรติดโซล่าร์เซลล์ (โปรเจกต์ขนาดใหญ่)"
+                    else:
+                        if "กิจการขนาดใหญ่" in str(user_type) and cust_avg_amt >= 30000: is_recommended = True
+                        elif "กิจการขนาดกลาง" in str(user_type) and cust_avg_amt >= 15000: is_recommended = True
+                        elif "กิจการขนาดใหญ่" not in str(user_type) and "กิจการขนาดกลาง" not in str(user_type) and cust_avg_amt >= 3000: is_recommended = True
+                        
+                        if is_recommended:
+                            status_text = "ควรติดโซล่าร์เซลล์ (คุ้มทุนเหมาะสม)"
+                
+                if is_recommended:
                     status_color = "#dcfce7"
                     status_font = "#166534"
                 else:
-                    status_text = "ยังไม่แนะนำ (ใช้ไฟน้อยไปหรือคืนทุนช้า)"
                     status_color = "#fee2e2"
                     status_font = "#991b1b"
                 
@@ -1987,7 +2044,7 @@ if df is not None:
                         st.markdown(f"<div style='text-align:center'><b>ระยะเวลาคืนทุน</b><br><span style='font-size: 1.2em; color: #b45309;'>{payback:,.1f} ปี</span><br>(ลงทุน ฿ {investment:,.0f} | กำไร ฿ {company_profit:,.0f})</div>", unsafe_allow_html=True)
                 with dcol4:
                     with st.container(border=True):
-                        st.markdown(f"<div style='text-align:center'><b>สภาพแวดล้อม (Real-Time)</b><br><span style='font-size: 0.75em; color: #6b7280;'>พิกัด: {lat:.4f}, {lon:.4f}</span><br><span style='font-size: 0.9em; color: #6b7280;'>ฝุ่น PM2.5: {pm25:.1f} μg/m³<br>ความเข้มแสง: {100 - cloud:.0f}%</span></div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='text-align:center'><b>สภาพแวดล้อม (Real-Time)</b><br><span style='font-size: 0.75em; color: #6b7280;'>พิกัด: {lat:.4f}, {lon:.4f}</span><br><span style='font-size: 0.9em; color: #6b7280;'>ฝุ่น PM2.5: {pm25:.1f} μg/m³<br>รับแสงสุทธิ: {100 - l_imp:.0f}%</span></div>", unsafe_allow_html=True)
 
                 st.markdown(f'''
                 <div style="background-color: {status_color}; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
@@ -2014,7 +2071,7 @@ if df is not None:
                 st.markdown("<br>", unsafe_allow_html=True)
                 with st.expander("ดูรายการคำนวณทีละขั้นตอน 9 ข้อ (อิงจากหน่วยไฟและค่าไฟจริงของลูกค้ารายนี้)"):
                     pkg_rec = "3 kW" if actual_kw <= 3 else "5 kW" if actual_kw <= 5 else "10 kW" if actual_kw <= 10 else "15 kW" if actual_kw <= 15 else ">15 kW"
-                    produced_before = actual_kw * 120
+                    produced_before = actual_kw * (135.0 * (1 - 0.15))
                     lost_kwh = produced_before - solar_produced
                     
                     st.markdown(f"""
@@ -2022,12 +2079,12 @@ if df is not None:
                     - การใช้ไฟเฉลี่ย (`kwh_total`): **{cust_avg_kwh:,.2f} หน่วย/เดือน**
                     - ค่าไฟเฉลี่ย (`amt_invoice`): **{cust_avg_amt:,.2f} บาท/เดือน**
                     - อัตราค่าไฟเฉลี่ย: **{avg_rate:,.2f} บาท/หน่วย**
-                    - สภาพแวดล้อม ณ พิกัดบ้าน ({lat:.4f}, {lon:.4f}): ฝุ่น PM2.5 = {pm25:.1f} (ลดทอน {d_imp:.1f}%), ความเข้มแสง = {100 - cloud:.0f}% (เมฆลดทอน {l_imp:.1f}%)
+                    - สภาพแวดล้อม ณ พิกัดบ้าน ({lat:.4f}, {lon:.4f}): ฝุ่น PM2.5 = {pm25:.1f} (ลดทอน {d_imp:.1f}%), ปริมาณเมฆ = {cloud:.0f}% (ลดทอนแสง {l_imp:.1f}%)
 
                     **ผลการคำนวณ 9 ขั้นตอน:**
-                    1. **ขนาดระบบโซลาร์เซลล์ที่เหมาะสม:** ขั้นต่ำ `{target_kw:,.2f} kW` *(ประเมินให้ครอบคลุมการใช้ไฟกลางวัน {day_r*100:.0f}%)*
+                    1. **ขนาดระบบโซลาร์เซลล์ที่เหมาะสม:** ขั้นต่ำ `{recommended_kw:,.2f} kW` *(ประเมินให้ครอบคลุมการใช้ไฟกลางวัน {day_r*100:.0f}%)*
                     2. **จำนวนแผงที่ต้องใช้:** `{int(panels)} แผง` *(แผงละ 550W รวมได้ขนาดติดตั้งจริง = {actual_kw:,.2f} kW)*
-                    3. **พลังงานที่ผลิตได้ต่อเดือน (ก่อนหักผลกระทบ):** `{produced_before:,.2f} kWh` *(คิดจาก 120 หน่วย/kW)*
+                    3. **พลังงานที่ผลิตได้ต่อเดือน (ก่อนหักผลกระทบฝุ่น/เมฆ):** `{produced_before:,.2f} kWh`
                     4. **พลังงานที่ผลิตได้ (หลังหักฝุ่นและสภาพอากาศ):** `{solar_produced:,.2f} kWh`
                     5. **สูญเสียพลังงานจากฝุ่นและเมฆ:** `{lost_kwh:,.2f} kWh`
                     6. **ประหยัดค่าไฟได้:** `{monthly_savings:,.2f} บาท/เดือน`
@@ -2162,51 +2219,67 @@ if df is not None:
             cust_summary['lat_r'] = np.nan
             cust_summary['lon_r'] = np.nan
 
-        # 3. ฟังก์ชันดึงข้อมูลจาก Open-Meteo API (ใช้ Cache ลดการดึงซ้ำ)
+        # 3. ฟังก์ชันดึงข้อมูลจาก WeatherAPI (ใช้ Cache ลดการดึงซ้ำ)
         @st.cache_data(ttl=1800) # อัปเดตทุกครึ่งชั่วโมง
-        def fetch_owm_data_v2(coords):
+        def fetch_weatherapi_data(coords):
             import time
             results = {}
             api_errors = set()
             
-            # OpenWeatherMap Free Tier จำกัดที่ 60 requests/minute (1 req/sec)
-            # จำกัดจุดที่ไม่ซ้ำกันให้ไม่เกิน 25 จุด เพื่อไม่ให้รอนานและไม่โดนบล็อก
-            if len(coords) > 25:
-                coords = coords[:25]
+            # WeatherAPI Free Tier มี Rate Limit, จำกัดการดึงข้อมูลเพื่อไม่ให้เกินโควต้า
+            # สามารถปรับเพิ่มจำนวนจุดได้ (เช่น 50 จุด) แต่จะทำให้หน้าเว็บโหลดช้าลงเล็กน้อย (จุดละ ~0.5 วินาที)
+            if len(coords) > 50:
+                coords = coords[:50]
                 
-            # เปลี่ยนมาใช้การวนลูปปกติแทน Parallel เพื่อควบคุม Rate Limit อย่างเคร่งครัด
+            # --- ใส่ API Key ของคุณตรงนี้ ---
+            # สมัครได้ฟรีที่: https://www.weatherapi.com/
+            weather_api_key = "a652cc2fd3c54d61917130948261006"
+            
+            if weather_api_key == "YOUR_WEATHERAPI_KEY":
+                # ไม่แสดง error ทันที แต่จะคืนค่าว่างเพื่อให้ระบบใช้ Default value แทน
+                return {}, ["No API Key"]
+
             for lat, lon in coords:
                 if not (-90 <= lat <= 90 and -180 <= lon <= 180):
-                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0}
+                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0, 'temp_c': 30.0, 'humidity': 60.0, 'precip_mm': 0.0, 'wind_kph': 10.0, 'uv': 6.0}
                     continue
                     
                 try:
-                    time.sleep(1.1) # หน่วงเวลา 1.1 วินาที เพื่อไม่ให้เกิน 60 ครั้ง/นาที
-                    owm_api_key = "0f5d49af1e876c2b86df0df789f5f02b"
-                    aqi_url = f"https://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={owm_api_key}"
-                    w_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={owm_api_key}"
+                    # WeatherAPI ไม่ได้จำกัด Rate Limit เข้มงวดเท่า OWM แต่ใส่ sleep ไว้กันเหนียว
+                    time.sleep(0.5) 
                     
-                    req_aqi = requests.get(aqi_url, timeout=5)
-                    req_w = requests.get(w_url, timeout=5)
+                    # ใช้ API call เดียวได้ทั้งสภาพอากาศและค่าฝุ่น
+                    api_url = f"https://api.weatherapi.com/v1/current.json?key={weather_api_key}&q={lat},{lon}&aqi=yes"
+                    
+                    req = requests.get(api_url, timeout=7)
                     
                     pm25 = 20.0
-                    if req_aqi.status_code == 200:
-                        data_aqi = req_aqi.json()
-                        if 'list' in data_aqi and len(data_aqi['list']) > 0:
-                            pm25 = float(data_aqi['list'][0].get('components', {}).get('pm2_5', 20.0))
-                    else:
-                        api_errors.add(req_aqi.status_code)
-                            
                     cloud = 20.0
-                    if req_w.status_code == 200:
-                        cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
-                    else:
-                        api_errors.add(req_w.status_code)
+                    temp_c = 30.0
+                    humidity = 60.0
+                    precip_mm = 0.0
+                    wind_kph = 10.0
+                    uv = 6.0
                     
-                    results[(lat, lon)] = {'pm25': pm25, 'cloud': cloud}
+                    if req.status_code == 200:
+                        data = req.json()
+                        current_data = data.get('current', {})
+                        cloud = float(current_data.get('cloud', 20.0))
+                        temp_c = float(current_data.get('temp_c', 30.0))
+                        humidity = float(current_data.get('humidity', 60.0))
+                        precip_mm = float(current_data.get('precip_mm', 0.0))
+                        wind_kph = float(current_data.get('wind_kph', 10.0))
+                        uv = float(current_data.get('uv', 6.0))
+                        
+                        air_quality_data = current_data.get('air_quality', {})
+                        pm25 = float(air_quality_data.get('pm2_5', 20.0))
+                    else:
+                        api_errors.add(req.status_code)
+                    
+                    results[(lat, lon)] = {'pm25': pm25, 'cloud': cloud, 'temp_c': temp_c, 'humidity': humidity, 'precip_mm': precip_mm, 'wind_kph': wind_kph, 'uv': uv}
                 except Exception as e:
-                    api_errors.add("Timeout")
-                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0} # ค่าเริ่มต้นกรณี API Error
+                    api_errors.add(f"Timeout/Error: {e}")
+                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0, 'temp_c': 30.0, 'humidity': 60.0, 'precip_mm': 0.0, 'wind_kph': 10.0, 'uv': 6.0}
                     
             return results, list(api_errors)
 
@@ -2215,13 +2288,22 @@ if df is not None:
         
         env_data = {}
         api_error_flags = []
+        
+        col_api_text, col_api_btn = st.columns([4, 1])
+        with col_api_btn:
+            if st.button("🔄 รีเฟรชข้อมูลสภาพอากาศ", use_container_width=True, help="ล้างแคชและดึงข้อมูลจาก WeatherAPI ใหม่"):
+                fetch_weatherapi_data.clear()
+                st.rerun()
+                
         if coord_list:
             with st.spinner("กำลังเชื่อมต่อดาวเทียม... ดึงข้อมูลความเข้มแสงและ PM2.5 แบบ Real-Time ให้แต่ละพิกัด..."):
-                env_data, api_error_flags = fetch_owm_data_v2(coord_list)
+                env_data, api_error_flags = fetch_weatherapi_data(coord_list)
                 
         if api_error_flags:
-            if 401 in api_error_flags:
-                st.warning("⚠️ **แจ้งเตือน:** API Key ของ OpenWeatherMap ยังไม่เปิดใช้งาน (หากเพิ่งสมัครต้องรอ 1-2 ชม.) ระบบจึงใช้ค่าเริ่มต้นแทนชั่วคราว")
+            if "No API Key" in api_error_flags:
+                st.error("⚠️ กรุณาใส่ API Key ของ WeatherAPI ในโค้ด `dashboard.py` ก่อนใช้งาน")
+            elif 401 in api_error_flags or 2006 in api_error_flags:
+                st.warning("⚠️ **แจ้งเตือน:** API Key ของ WeatherAPI ไม่ถูกต้องหรือไม่เปิดใช้งาน ระบบจึงใช้ค่าเริ่มต้นแทนชั่วคราว")
             elif 429 in api_error_flags:
                 st.warning("⚠️ **แจ้งเตือน:** ระบบดึงข้อมูลสภาพอากาศถูกจำกัดจำนวนครั้ง (Rate Limit) ทำให้ดึงข้อมูลได้ไม่ครบทั้งหมด")
             else:
@@ -2230,18 +2312,41 @@ if df is not None:
         # 4. ฟังก์ชันคำนวณผลกระทบต่อแผงโซล่าร์เซลล์
         def apply_env_impact(row):
             lat, lon = row.get('lat_r'), row.get('lon_r')
-            if pd.isna(lat) or pd.isna(lon): return pd.Series([20.0, 20.0, 1.3, 3.0])
-            data = env_data.get((lat, lon), {'pm25': 20.0, 'cloud': 20.0})
-            pm = float(data['pm25']) if data['pm25'] is not None else 20.0
-            cl = float(data['cloud']) if data['cloud'] is not None else 20.0
-            # อิงความสมจริง: ฝุ่น 150 AQI ลดทอนแสงประมาณ 8%, เมฆบัง 100% กระทบค่าเฉลี่ยรายเดือนสูงสุด 15%
+
+            # ตรวจสอบว่าพิกัดนี้ถูกดึงข้อมูลมาหรือไม่
+            data_source = "N/A" # ค่าเริ่มต้นกรณีไม่มีพิกัด
+            data = env_data.get((lat, lon))
+            if data:
+                data_source = "Real-time"
+            elif not data and env_data:
+                # ถ้าระบุพิกัดไม่ได้ หรือพิกัดถูกตัดทิ้ง ให้ 'ยืม' ข้อมูลสภาพอากาศจาก 'จุดที่ใกล้ที่สุด' ที่มีข้อมูล
+                closest_coord = min(env_data.keys(), key=lambda k: ((lat-k[0])**2 + (lon-k[1])**2) if pd.notna(lat) and pd.notna(lon) else float('inf'))
+                data = env_data[closest_coord]
+                data_source = "Borrowed (Closest)"
+            elif not data:
+                # ถ้า API ล่มทั้งหมด หรือเน็ตหลุด ให้ใช้ค่าประเมินเฉลี่ยของไทย
+                data = {'pm25': 25.5, 'cloud': 30.0, 'temp_c': 33.0, 'humidity': 65.0, 'precip_mm': 0.0, 'wind_kph': 10.0, 'uv': 6.0}
+                data_source = "Default"
+                
+            pm = float(data['pm25'])
+            cl = float(data['cloud'])
+            tc = float(data['temp_c'])
+            hm = float(data['humidity'])
+            pr = float(data['precip_mm'])
+            wd = float(data['wind_kph'])
+            uv = float(data['uv'])
+            
             d_imp = min(pm / 15.0, 8.0) 
             l_imp = cl * 0.15  
-            return pd.Series([pm, cl, d_imp, l_imp])
+            
+            panel_temp = max(tc, tc + 20 - (wd * 0.5))
+            t_imp = max(0, panel_temp - 25) * 0.4
+            h_imp = max(0, hm - 60) * 0.05
+            r_imp = min(pr * 2, 10.0)
+            return pd.Series([pm, cl, tc, hm, pr, wd, uv, d_imp, l_imp, t_imp, h_imp, r_imp, data_source])
 
         # ผสานข้อมูลสิ่งแวดล้อมเข้าตาราง
-        cust_summary[['pm25_real', 'cloud_real', 'dust_impact', 'light_impact']] = cust_summary.apply(apply_env_impact, axis=1)
-        cust_summary['light_intensity'] = 100 - cust_summary['cloud_real']
+        cust_summary[['pm25_real', 'cloud_real', 'temp_real', 'humid_real', 'precip_real', 'wind_real', 'uv_real', 'dust_impact', 'light_impact', 'temp_impact', 'humid_impact', 'rain_impact', 'env_data_source']] = cust_summary.apply(apply_env_impact, axis=1)
 
         # หารด้วยจำนวนบิลเพื่อหาค่าเฉลี่ยต่อเดือนของแต่ละบ้าน
         cust_summary['avg_kwh_per_month'] = cust_summary['total_kwh'] / cust_summary['bill_count']
@@ -2270,9 +2375,10 @@ if df is not None:
             else:
                 return ">15 kW"
 
-        # คำนวณแบบสมจริง: ฐาน 135 kWh/kW หัก System Loss 15% และหักปัจจัยสิ่งแวดล้อม
-        cust_summary['efficiency_factor'] = (1 - 0.15) * (1 - (cust_summary['dust_impact'] / 100)) * (1 - (cust_summary['light_impact'] / 100))
-        cust_summary['kwh_per_kw_month_adjusted'] = 135.0 * cust_summary['efficiency_factor']
+        # คำนวณแบบสมจริง: ฐาน 145 kWh/kW (เพิ่มฐานเพื่อรองรับการหักลบยิบย่อย) หักปัจจัยสิ่งแวดล้อม
+        cust_summary['efficiency_factor'] = (1 - 0.15) * (1 - (cust_summary['dust_impact'] / 100)) * (1 - (cust_summary['light_impact'] / 100)) * (1 - (cust_summary['temp_impact'] / 100)) * (1 - (cust_summary['humid_impact'] / 100)) * (1 - (cust_summary['rain_impact'] / 100))
+        cust_summary['kwh_per_kw_month_adjusted'] = 145.0 * cust_summary['efficiency_factor']
+        cust_summary['light_intensity'] = (cust_summary['efficiency_factor'] / (1 - 0.15)) * 100 # ประสิทธิภาพสุทธิเทียบกับตอนไม่มีปัจจัยกวน
 
         # จำกัดเป้าหมายการติดไว้แค่ปริมาณที่ใช้ตอนกลางวัน (On-Grid)
         cust_summary['target_kwh'] = cust_summary['avg_kwh_per_month'] * cust_summary['day_ratio']
@@ -2358,7 +2464,7 @@ if df is not None:
         
         # จัดคอลัมน์และเปลี่ยนชื่อเพื่อแสดงผล
         display_df = cust_summary[[
-            customer_col, 'user_type_name', 'should_install', 'pm25_real', 'light_intensity', 'avg_kwh_per_month', 'kwh_saved', 'avg_amt_per_month', 'monthly_savings', 'cost_after_solar',
+            customer_col, 'user_type_name', 'should_install', 'env_data_source', 'pm25_real', 'temp_real', 'wind_real', 'uv_real', 'light_intensity', 'avg_kwh_per_month', 'kwh_saved', 'avg_amt_per_month', 'monthly_savings', 'cost_after_solar',
             'actual_kw', 'recommended_package', 'panels_needed', 'investment', 'company_profit', 'payback_years'
         ]].copy()
         
@@ -2366,8 +2472,12 @@ if df is not None:
             customer_col: 'หมายเลขผู้ใช้ไฟ',
             'user_type_name': 'ประเภทผู้ใช้ไฟ',
             'should_install': 'คำแนะนำ',
+            'env_data_source': 'แหล่งข้อมูลอากาศ',
             'pm25_real': 'ฝุ่น PM2.5 (μg/m³)',
-            'light_intensity': 'ความเข้มแสง (%)',
+            'temp_real': 'อุณหภูมิ (°C)',
+            'wind_real': 'ความเร็วลม (km/h)',
+            'uv_real': 'ดัชนี UV (แสง)',
+            'light_intensity': 'ประสิทธิภาพสุทธิ (%)',
             'avg_kwh_per_month': 'ใช้ไฟเดิม (kWh/เดือน)',
             'kwh_saved': 'ประหยัดไฟ (kWh/เดือน)',
             'avg_amt_per_month': 'ค่าไฟเดิม (บาท/เดือน)',
@@ -2493,7 +2603,7 @@ if df is not None:
                 return "฿ 0"
             min_val = round(val * 0.9, -2)
             max_val = round(val * 1.1, -2)
-            return f"฿ {min_val:,.0f} - {max_val:,.0f}"
+            return f"฿ {min_val:,.2f} - {max_val:,.2f}"
 
         display_df['ประหยัดเงิน (บาท/เดือน)'] = display_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
         if not profitable_df.empty:
@@ -2506,9 +2616,13 @@ if df is not None:
             "หมายเลขผู้ใช้ไฟ": st.column_config.TextColumn("หมายเลขผู้ใช้ไฟ"),
             "ประเภทผู้ใช้ไฟ": st.column_config.TextColumn("ประเภทผู้ใช้ไฟ"),
             "คำแนะนำ": st.column_config.TextColumn("คำแนะนำ"),
+            "แหล่งข้อมูลอากาศ": st.column_config.TextColumn("แหล่งข้อมูลอากาศ"),
             "โอกาสปิดการขาย": st.column_config.TextColumn("โอกาสปิดการขาย"),
             "ฝุ่น PM2.5 (μg/m³)": st.column_config.Column("ฝุ่น PM2.5"),
-            "ความเข้มแสง (%)": st.column_config.ProgressColumn("ความเข้มแสง (%)", format="%f%%", min_value=0, max_value=100),
+            "อุณหภูมิ (°C)": st.column_config.Column("อุณหภูมิ (°C)"),
+            "ความเร็วลม (km/h)": st.column_config.Column("ความเร็วลม (km/h)"),
+            "ดัชนี UV (แสง)": st.column_config.Column("ดัชนี UV (แสง)"),
+            "ประสิทธิภาพสุทธิ (%)": st.column_config.ProgressColumn("ประสิทธิภาพสุทธิ (%)", format="%d%%", min_value=0, max_value=100),
             "ใช้ไฟเดิม (kWh/เดือน)": st.column_config.Column("ใช้ไฟเดิม (kWh/เดือน)"),
             "ประหยัดไฟ (kWh/เดือน)": st.column_config.Column("ประหยัดไฟ (kWh/เดือน)"),
             "ค่าไฟเดิม (บาท/เดือน)": st.column_config.Column("ค่าไฟเดิม"),
@@ -2519,19 +2633,22 @@ if df is not None:
             "จำนวนแผง (แผงละ 550W)": st.column_config.Column("แผง"),
             "ราคาขายแพ็กเกจ (บาท)": st.column_config.Column("ราคาขายแพ็กเกจ"),
             "กำไรบริษัท (บาท)": st.column_config.Column("กำไรบริษัท"),
-            "คืนทุน (ปี)": st.column_config.ProgressColumn("คืนทุน (ปี)", format="%.1f", min_value=0, max_value=10),
+            "คืนทุน (ปี)": st.column_config.ProgressColumn("คืนทุน (ปี)", format="%.2f", min_value=0, max_value=10),
         }
         
         style_format = {
-            "ฝุ่น PM2.5 (μg/m³)": "{:,.1f}",
-            "ใช้ไฟเดิม (kWh/เดือน)": "{:,.0f}",
-            "ประหยัดไฟ (kWh/เดือน)": "{:,.0f}",
-            "ค่าไฟเดิม (บาท/เดือน)": "฿ {:,.0f}",
-            "ค่าไฟสุทธิ (บาท/เดือน)": "฿ {:,.0f}",
+            "ฝุ่น PM2.5 (μg/m³)": "{:,.2f}",
+            "อุณหภูมิ (°C)": "{:,.2f}",
+            "ความเร็วลม (km/h)": "{:,.2f}",
+            "ดัชนี UV (แสง)": "{:,.2f}",
+            "ใช้ไฟเดิม (kWh/เดือน)": "{:,.2f}",
+            "ประหยัดไฟ (kWh/เดือน)": "{:,.2f}",
+            "ค่าไฟเดิม (บาท/เดือน)": "฿ {:,.2f}",
+            "ค่าไฟสุทธิ (บาท/เดือน)": "฿ {:,.2f}",
             "ขนาดติดตั้ง (kW)": "{:,.2f}",
             "จำนวนแผง (แผงละ 550W)": "{:,.0f}",
-            "ราคาขายแพ็กเกจ (บาท)": "฿ {:,.0f}",
-            "กำไรบริษัท (บาท)": "฿ {:,.0f}"
+            "ราคาขายแพ็กเกจ (บาท)": "฿ {:,.2f}",
+            "กำไรบริษัท (บาท)": "฿ {:,.2f}"
         }
         
         # แยกข้อมูลลูกค้ากลุ่มพิเศษออกมา
@@ -2546,7 +2663,7 @@ if df is not None:
         ])
         
         with tab_all:
-            st.dataframe(display_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+            st.dataframe(display_df.style.format(style_format, na_rep='-'), column_config=table_config, hide_index=True, use_container_width=True)
             # --- ส่วนปุ่ม Export ไฟล์ Excel (ทั้งหมด) ---
             st.markdown("<br>", unsafe_allow_html=True)
             if not display_df.empty:
@@ -2576,7 +2693,7 @@ if df is not None:
             st.markdown("#### กลุ่มลูกค้าที่ 'ซื้อง่าย คืนทุนไว กำไรดี'")
             st.markdown("ลูกค้ากลุ่มนี้คือ **'กลุ่มเป้าหมายหลัก' (Hot Leads)** มีโอกาสที่เซลล์จะปิดการขายได้ง่ายที่สุด เพราะประเมินแล้วว่าลูกค้ามีระยะเวลาคืนทุนสั้นมาก (< 5 ปี) และมียอดประหยัดเงินต่อเดือนสูง ทำให้ลูกค้ารู้สึกถึงความคุ้มค่าและตัดสินใจได้ง่ายขึ้น")
             
-            st.dataframe(hot_leads_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+            st.dataframe(hot_leads_df.style.format(style_format, na_rep='-'), column_config=table_config, hide_index=True, use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             if not hot_leads_df.empty:
@@ -2610,7 +2727,7 @@ if df is not None:
             st.markdown("#### กลุ่มลูกค้ารายใหญ่ (ลูกค้ากลุ่มพิเศษ)")
             st.markdown("ลูกค้ากลุ่มนี้คือลูกค้าที่คำนวณแล้วต้องใช้แผงโซล่าร์เซลล์จำนวนมากเกินกว่าพิกัดทั่วไป ซึ่งถือเป็นโปรเจกต์ขนาดใหญ่ที่น่าสนใจสำหรับการเข้าไปนำเสนอขาย")
             
-            st.dataframe(special_leads_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+            st.dataframe(special_leads_df.style.format(style_format, na_rep='-'), column_config=table_config, hide_index=True, use_container_width=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             if not special_leads_df.empty:
@@ -2710,10 +2827,10 @@ if df is not None:
                     else: return "EPC Mega Project"
                 sim_raw_df['recommended_package'] = sim_raw_df['capped_kw'].apply(recommend_package_sim)
                 
-                sim_raw_df['should_install'] = "✅ ควรติด (สมจริง)"
+                sim_raw_df['should_install'] = "✅ ควรติด"
 
                 sim_display_df = sim_raw_df[[
-                    customer_col, 'user_type_name', 'should_install', 'pm25_real', 'light_intensity', 
+                    customer_col, 'user_type_name', 'should_install', 'pm25_real', 'temp_real', 'wind_real', 'uv_real', 'light_intensity', 
                     'avg_kwh_per_month', 'kwh_saved', 'avg_amt_per_month', 'monthly_savings', 'cost_after_solar',
                     'capped_kw', 'recommended_package', 'capped_panels', 'investment', 'company_profit', 'payback_years'
                 ]].copy()
@@ -2723,7 +2840,10 @@ if df is not None:
                     'user_type_name': 'ประเภทผู้ใช้ไฟ',
                     'should_install': 'คำแนะนำ',
                     'pm25_real': 'ฝุ่น PM2.5 (μg/m³)',
-                    'light_intensity': 'ความเข้มแสง (%)',
+                    'temp_real': 'อุณหภูมิ (°C)',
+                    'wind_real': 'ความเร็วลม (km/h)',
+                    'uv_real': 'ดัชนี UV (แสง)',
+                    'light_intensity': 'ประสิทธิภาพสุทธิ (%)',
                     'avg_kwh_per_month': 'ใช้ไฟเดิม (kWh/เดือน)',
                     'kwh_saved': 'ประหยัดไฟ (kWh/เดือน)',
                     'avg_amt_per_month': 'ค่าไฟเดิม (บาท/เดือน)',
@@ -2741,7 +2861,7 @@ if df is not None:
                 sim_display_df['ประหยัดเงิน (บาท/เดือน)'] = sim_display_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
                 sim_display_df = sim_display_df.sort_values(by='กำไรบริษัท (บาท)', ascending=False).reset_index(drop=True)
                 
-                st.dataframe(sim_display_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+                st.dataframe(sim_display_df.style.format(style_format, na_rep='-'), column_config=table_config, hide_index=True, use_container_width=True)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 buffer_sim = io.BytesIO()
@@ -2794,4 +2914,4 @@ if df is not None:
 
 else:
     import os
-    st.warning(f"ไม่พบข้อมูล กรุณาตรวจสอบว่ามีไฟล์ CSV หรือ ZIP ในโฟลเดอร์เดียวกับสคริปต์หรือไม่\n\n(กำลังค้นหาที่โฟลเดอร์: `{os.path.abspath('.')}`)")  
+    st.warning(f"ไม่พบข้อมูล กรุณาตรวจสอบว่ามีไฟล์ CSV หรือ ZIP ในโฟลเดอร์เดียวกับสคริปต์หรือไม่\n\n(กำลังค้นหาที่โฟลเดอร์: `{os.path.abspath('.')}`)")
