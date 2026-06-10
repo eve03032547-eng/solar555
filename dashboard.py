@@ -1921,10 +1921,14 @@ if df is not None:
                         req_w = requests.get(w_url, timeout=5)
                         if req_aqi.status_code == 200:
                             pm25 = float(req_aqi.json().get('list', [{}])[0].get('components', {}).get('pm2_5', 20.0))
+                        else:
+                            print(f"API Error (AQI): {req_aqi.status_code} - {req_aqi.text}")
                         if req_w.status_code == 200:
                             cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
-                    except:
-                        pass
+                        else:
+                            print(f"API Error (Weather): {req_w.status_code} - {req_w.text}")
+                    except Exception as e:
+                        print(f"API Request Exception: {e}")
                         
                 d_imp = min(pm25 / 10, 15.0)
                 l_imp = min(cloud / 4, 25.0)
@@ -2160,9 +2164,10 @@ if df is not None:
 
         # 3. ฟังก์ชันดึงข้อมูลจาก Open-Meteo API (ใช้ Cache ลดการดึงซ้ำ)
         @st.cache_data(ttl=1800) # อัปเดตทุกครึ่งชั่วโมง
-        def fetch_realtime_env(coords):
+        def fetch_owm_data_v2(coords):
             import time
             results = {}
+            api_errors = set()
             
             # OpenWeatherMap Free Tier จำกัดที่ 60 requests/minute (1 req/sec)
             # จำกัดจุดที่ไม่ซ้ำกันให้ไม่เกิน 25 จุด เพื่อไม่ให้รอนานและไม่โดนบล็อก
@@ -2171,6 +2176,10 @@ if df is not None:
                 
             # เปลี่ยนมาใช้การวนลูปปกติแทน Parallel เพื่อควบคุม Rate Limit อย่างเคร่งครัด
             for lat, lon in coords:
+                if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0}
+                    continue
+                    
                 try:
                     time.sleep(1.1) # หน่วงเวลา 1.1 วินาที เพื่อไม่ให้เกิน 60 ครั้ง/นาที
                     owm_api_key = "0f5d49af1e876c2b86df0df789f5f02b"
@@ -2185,24 +2194,38 @@ if df is not None:
                         data_aqi = req_aqi.json()
                         if 'list' in data_aqi and len(data_aqi['list']) > 0:
                             pm25 = float(data_aqi['list'][0].get('components', {}).get('pm2_5', 20.0))
+                    else:
+                        api_errors.add(req_aqi.status_code)
                             
                     cloud = 20.0
                     if req_w.status_code == 200:
                         cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
+                    else:
+                        api_errors.add(req_w.status_code)
                     
                     results[(lat, lon)] = {'pm25': pm25, 'cloud': cloud}
-                except:
+                except Exception as e:
+                    api_errors.add("Timeout")
                     results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0} # ค่าเริ่มต้นกรณี API Error
                     
-            return results
+            return results, list(api_errors)
 
         valid_coords = cust_summary.dropna(subset=['lat_r', 'lon_r'])[['lat_r', 'lon_r']].drop_duplicates()
         coord_list = list(zip(valid_coords['lat_r'], valid_coords['lon_r']))
         
         env_data = {}
+        api_error_flags = []
         if coord_list:
             with st.spinner("กำลังเชื่อมต่อดาวเทียม... ดึงข้อมูลความเข้มแสงและ PM2.5 แบบ Real-Time ให้แต่ละพิกัด..."):
-                env_data = fetch_realtime_env(coord_list)
+                env_data, api_error_flags = fetch_owm_data_v2(coord_list)
+                
+        if api_error_flags:
+            if 401 in api_error_flags:
+                st.warning("⚠️ **แจ้งเตือน:** API Key ของ OpenWeatherMap ยังไม่เปิดใช้งาน (หากเพิ่งสมัครต้องรอ 1-2 ชม.) ระบบจึงใช้ค่าเริ่มต้นแทนชั่วคราว")
+            elif 429 in api_error_flags:
+                st.warning("⚠️ **แจ้งเตือน:** ระบบดึงข้อมูลสภาพอากาศถูกจำกัดจำนวนครั้ง (Rate Limit) ทำให้ดึงข้อมูลได้ไม่ครบทั้งหมด")
+            else:
+                st.warning(f"⚠️ **แจ้งเตือน:** เกิดข้อผิดพลาดในการดึงข้อมูลสภาพอากาศ (รหัส: {api_error_flags}) ระบบจึงใช้ค่าประเมินเริ่มต้นแทน")
 
         # 4. ฟังก์ชันคำนวณผลกระทบต่อแผงโซล่าร์เซลล์
         def apply_env_impact(row):
