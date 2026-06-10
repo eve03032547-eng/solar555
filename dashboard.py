@@ -1201,33 +1201,11 @@ if df is not None:
 
     # --- Sidebar สำหรับฟิลเตอร์ (ตัวกรอง) ---
     st.sidebar.header("ตัวกรองข้อมูล")
-    
-    customer_group_filter = st.sidebar.radio(
-        "แยกตามกลุ่มลูกค้าเป้าหมาย:",
-        options=["แสดงทุกประเภท", "🏢 กิจการขนาดใหญ่", "🏪 กิจการขนาดกลาง", "🏠 บ้านอยู่อาศัย", "🔧 กำหนดเอง..."]
+    selected_types = st.sidebar.multiselect(
+        "เลือกประเภทผู้ใช้งานเป้าหมาย",
+        options=df['user_type_name'].unique(),
+        default=df['user_type_name'].unique()
     )
-    
-    all_user_types = df['user_type_name'].unique()
-    
-    if customer_group_filter == "🏢 กิจการขนาดใหญ่":
-        pre_selected = [t for t in all_user_types if "ขนาดใหญ่" in str(t)]
-    elif customer_group_filter == "🏪 กิจการขนาดกลาง":
-        pre_selected = [t for t in all_user_types if "ขนาดกลาง" in str(t)]
-    elif customer_group_filter == "🏠 บ้านอยู่อาศัย":
-        pre_selected = [t for t in all_user_types if "บ้าน" in str(t)]
-    else:
-        pre_selected = all_user_types
-        
-    if customer_group_filter == "🔧 กำหนดเอง...":
-        selected_types = st.sidebar.multiselect(
-            "เลือกประเภทผู้ใช้งานเป้าหมาย",
-            options=all_user_types,
-            default=all_user_types
-        )
-    else:
-        selected_types = pre_selected
-        if customer_group_filter != "แสดงทุกประเภท":
-            st.sidebar.info(f"**กำลังแสดงเฉพาะ:**\n" + "\n".join([f"- {t}" for t in selected_types]))
     
     # กรองข้อมูลตามประเภทที่เลือก
     filtered_df = df[df['user_type_name'].isin(selected_types)]
@@ -1646,16 +1624,7 @@ if df is not None:
                     elif "กิจการ" in u_str: return 0.7
                     else: return 0.85
                 map_summary['day_ratio'] = map_summary['user_type'].apply(get_map_day_ratio) if 'user_type' in map_summary.columns else 0.85
-                
-                def get_map_max_kw(u_type):
-                    u_str = str(u_type)
-                    if "บ้าน" in u_str: return 15.0
-                    elif "กิจการขนาดใหญ่" in u_str or "กิจการเฉพาะอย่าง" in u_str: return 5000.0
-                    else: return 150.0
-                map_summary['max_kw_limit'] = map_summary['user_type'].apply(get_map_max_kw) if 'user_type' in map_summary.columns else 150.0
-                
-                raw_kw = avg_kwh * map_summary['day_ratio'] / 120
-                actual_kw = np.ceil(np.minimum(raw_kw, map_summary['max_kw_limit']) / 0.55) * 0.55
+                actual_kw = np.ceil((avg_kwh * map_summary['day_ratio'] / 120) / 0.55) * 0.55
                 avg_rate = np.where(avg_kwh > 0, map_summary['ค่าไฟเฉลี่ย/เดือน'] / avg_kwh, 4.5)
                 solar_produced = actual_kw * (120 * 0.931) # หักประสิทธิภาพฝุ่นเมฆ (ให้ตรงกับช่องค้นหา)
                 kwh_saved = np.minimum(solar_produced, avg_kwh)
@@ -1841,11 +1810,7 @@ if df is not None:
 
             day_r = 0.5 if "บ้าน" in u_type else (0.7 if "กิจการ" in u_type else 0.85)
             
-            if "บ้าน" in u_type: max_kw = 15.0
-            elif "กิจการขนาดใหญ่" in u_type or "กิจการเฉพาะอย่าง" in u_type: max_kw = 5000.0
-            else: max_kw = 150.0
-            
-            target_kw = min((avg_kwh * day_r) / 120, max_kw)
+            target_kw = (avg_kwh * day_r) / 120
             panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
             actual_kw = panels * 0.55
             avg_rate = avg_amt / avg_kwh if avg_kwh > 0 else 4.5
@@ -1922,19 +1887,10 @@ if df is not None:
                 cust_avg_kwh = cust_df['kwh_total'].mean()
                 user_type = cust_df['user_type_name'].iloc[0] if 'user_type_name' in cust_df.columns else "ไม่ระบุ"
                 
-                # 1. หาระยะเวลาใช้งานกลางวันและขีดจำกัดขนาดติดตั้ง
-                if "บ้าน" in str(user_type): 
-                    day_r = 0.5
-                    max_kw_limit = 15.0
-                elif "กิจการ" in str(user_type): 
-                    day_r = 0.7
-                    if "ขนาดใหญ่" in str(user_type) or "เฉพาะอย่าง" in str(user_type):
-                        max_kw_limit = 5000.0
-                    else:
-                        max_kw_limit = 150.0
-                else: 
-                    day_r = 0.85
-                    max_kw_limit = 150.0
+                # 1. หาระยะเวลาใช้งานกลางวัน
+                if "บ้าน" in str(user_type): day_r = 0.5
+                elif "กิจการ" in str(user_type): day_r = 0.7
+                else: day_r = 0.85
                 
                 # 2. ดึงพิกัดและข้อมูลสิ่งแวดล้อม (Real-time) สำหรับลูกค้ารายนี้
                 x_col = 'x_coord' if 'x_coord' in cust_df.columns else (cust_df.columns[6] if len(cust_df.columns) >= 8 else None)
@@ -1958,14 +1914,15 @@ if df is not None:
                 pm25, cloud = 20.0, 20.0
                 if lat != 0.0 and lon != 0.0:
                     try:
-                        aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=pm2_5"
-                        w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=cloud_cover"
+                        owm_api_key = "0f5d49af1e876c2b86df0df789f5f02b"
+                        aqi_url = f"https://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={owm_api_key}"
+                        w_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={owm_api_key}"
                         req_aqi = requests.get(aqi_url, timeout=5)
                         req_w = requests.get(w_url, timeout=5)
                         if req_aqi.status_code == 200:
-                            pm25 = float(req_aqi.json().get('current', {}).get('pm2_5', 20.0))
+                            pm25 = float(req_aqi.json().get('list', [{}])[0].get('components', {}).get('pm2_5', 20.0))
                         if req_w.status_code == 200:
-                            cloud = float(req_w.json().get('current', {}).get('cloud_cover', 20.0))
+                            cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
                     except:
                         pass
                         
@@ -1975,7 +1932,7 @@ if df is not None:
                 kwh_per_kw = 120 * eff_factor
                 
                 # 3. คำนวณความคุ้มค่า
-                target_kw = min((cust_avg_kwh * day_r) / 120, max_kw_limit)
+                target_kw = (cust_avg_kwh * day_r) / 120
                 panels = np.ceil(target_kw / 0.55) if target_kw > 0 else 0
                 actual_kw = panels * 0.55
                 avg_rate = cust_avg_amt / cust_avg_kwh if cust_avg_kwh > 0 else 4.5
@@ -2194,9 +2151,9 @@ if df is not None:
                 cust_summary['latitude'] = np.where(cust_summary['x_val'] < cust_summary['y_val'], cust_summary['x_val'], cust_summary['y_val'])
                 cust_summary['longitude'] = np.where(cust_summary['x_val'] < cust_summary['y_val'], cust_summary['y_val'], cust_summary['x_val'])
             
-            # ลดความละเอียดพิกัด (ทศนิยม 3 ตำแหน่ง = รัศมี ~100 เมตร) เพื่อให้ข้อมูลแม่นยำระดับหมู่บ้าน/ถนนจริงๆ
-            cust_summary['lat_r'] = cust_summary['latitude'].round(3)
-            cust_summary['lon_r'] = cust_summary['longitude'].round(3)
+            # ลดความละเอียดพิกัด (ทศนิยม 1 ตำแหน่ง = รัศมี ~11 กิโลเมตร) เพื่อลดจำนวนการดึง API ซ้ำซ้อนและป้องกันโดนบล็อก
+            cust_summary['lat_r'] = cust_summary['latitude'].round(1)
+            cust_summary['lon_r'] = cust_summary['longitude'].round(1)
         else:
             cust_summary['lat_r'] = np.nan
             cust_summary['lon_r'] = np.nan
@@ -2204,36 +2161,38 @@ if df is not None:
         # 3. ฟังก์ชันดึงข้อมูลจาก Open-Meteo API (ใช้ Cache ลดการดึงซ้ำ)
         @st.cache_data(ttl=1800) # อัปเดตทุกครึ่งชั่วโมง
         def fetch_realtime_env(coords):
-            import concurrent.futures
             import time
             results = {}
             
-            # ขยายลิมิตเป็น 200 จุด และป้องกัน API โดนบล็อก
-            if len(coords) > 200:
-                coords = coords[:200]
+            # OpenWeatherMap Free Tier จำกัดที่ 60 requests/minute (1 req/sec)
+            # จำกัดจุดที่ไม่ซ้ำกันให้ไม่เกิน 25 จุด เพื่อไม่ให้รอนานและไม่โดนบล็อก
+            if len(coords) > 25:
+                coords = coords[:25]
                 
-            def fetch_single(lat, lon):
+            # เปลี่ยนมาใช้การวนลูปปกติแทน Parallel เพื่อควบคุม Rate Limit อย่างเคร่งครัด
+            for lat, lon in coords:
                 try:
-                    time.sleep(0.2) # หน่วงเวลาเล็กน้อยป้องกัน API บล็อก (Rate Limit 429)
-                    aqi_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=pm2_5"
-                    w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=cloud_cover"
+                    time.sleep(1.1) # หน่วงเวลา 1.1 วินาที เพื่อไม่ให้เกิน 60 ครั้ง/นาที
+                    owm_api_key = "0f5d49af1e876c2b86df0df789f5f02b"
+                    aqi_url = f"https://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={owm_api_key}"
+                    w_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={owm_api_key}"
                     
                     req_aqi = requests.get(aqi_url, timeout=5)
                     req_w = requests.get(w_url, timeout=5)
                     
-                    pm25 = float(req_aqi.json().get('current', {}).get('pm2_5', 20.0)) if req_aqi.status_code == 200 else 20.0
-                    cloud = float(req_w.json().get('current', {}).get('cloud_cover', 20.0)) if req_w.status_code == 200 else 20.0
+                    pm25 = 20.0
+                    if req_aqi.status_code == 200:
+                        data_aqi = req_aqi.json()
+                        if 'list' in data_aqi and len(data_aqi['list']) > 0:
+                            pm25 = float(data_aqi['list'][0].get('components', {}).get('pm2_5', 20.0))
+                            
+                    cloud = 20.0
+                    if req_w.status_code == 200:
+                        cloud = float(req_w.json().get('clouds', {}).get('all', 20.0))
                     
-                    return (lat, lon, pm25, cloud)
-                except:
-                    return (lat, lon, 20.0, 20.0) # ค่าเริ่มต้นกรณี API Error หรือ Timeout
-
-            # ดึงข้อมูลพร้อมกันแบบ Parallel แต่อย่าให้ถี่เกินไป (ลดเหลือ 3 workers)
-            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-                futures = [executor.submit(fetch_single, lat, lon) for lat, lon in coords]
-                for future in concurrent.futures.as_completed(futures):
-                    lat, lon, pm25, cloud = future.result()
                     results[(lat, lon)] = {'pm25': pm25, 'cloud': cloud}
+                except:
+                    results[(lat, lon)] = {'pm25': 20.0, 'cloud': 20.0} # ค่าเริ่มต้นกรณี API Error
                     
             return results
 
@@ -2276,17 +2235,6 @@ if df is not None:
                 
         cust_summary['day_ratio'] = cust_summary['user_type_name'].apply(get_day_ratio)
 
-        def get_max_kw_limit(user_type):
-            user_type_str = str(user_type)
-            if "บ้าน" in user_type_str:
-                return 15.0
-            elif "กิจการขนาดใหญ่" in user_type_str or "กิจการเฉพาะอย่าง" in user_type_str:
-                return 5000.0
-            else:
-                return 150.0
-                
-        cust_summary['max_kw_limit'] = cust_summary['user_type_name'].apply(get_max_kw_limit)
-
         def recommend_package(kw):
             if kw <= 3:
                 return "3 kW"
@@ -2305,8 +2253,8 @@ if df is not None:
 
         # จำกัดเป้าหมายการติดไว้แค่ปริมาณที่ใช้ตอนกลางวัน (On-Grid)
         cust_summary['target_kwh'] = cust_summary['avg_kwh_per_month'] * cust_summary['day_ratio']
-        # ใช้ 105 เป็นค่าตั้งต้นในการหาขนาด kW ที่เหมาะสม (เพื่อไม่ให้ติดตั้ง Over size) และจำกัดตามประเภทสถานที่
-        cust_summary['recommended_kw'] = np.minimum(cust_summary['target_kwh'] / 105.0, cust_summary['max_kw_limit'])
+        # ใช้ 105 เป็นค่าตั้งต้นในการหาขนาด kW ที่เหมาะสม (เพื่อไม่ให้ติดตั้ง Over size)
+        cust_summary['recommended_kw'] = cust_summary['target_kwh'] / 105.0
 
         # คำนวณจำนวนแผงและปัดขึ้นเป็นจำนวนเต็ม
         cust_summary['panels_needed'] = np.ceil(cust_summary['recommended_kw'] / 0.55)
@@ -2324,8 +2272,8 @@ if df is not None:
         cust_summary['solar_kwh_produced'] = cust_summary['actual_kw'] * cust_summary['kwh_per_kw_month_adjusted']
         cust_summary['kwh_saved'] = np.minimum(cust_summary['solar_kwh_produced'], cust_summary['target_kwh'])
         
-        # คำนวณส่วนที่ประหยัดได้ (อิงจากหน่วยไฟที่ประหยัดได้จริง * อัตราค่าไฟ) และไม่ให้เกินค่าไฟเดิม
-        cust_summary['monthly_savings'] = cust_summary['kwh_saved'] * cust_summary['avg_rate']
+        # คำนวณส่วนที่ประหยัดได้ (ผลิตได้ตามประสิทธิภาพที่ปรับแล้ว * อัตราค่าไฟ) และไม่ให้เกินค่าไฟเดิม
+        cust_summary['monthly_savings'] = cust_summary['solar_kwh_produced'] * cust_summary['avg_rate']
         cust_summary['monthly_savings'] = np.minimum(cust_summary['monthly_savings'], cust_summary['avg_amt_per_month'])
         
         cust_summary['cost_after_solar'] = cust_summary['avg_amt_per_month'] - cust_summary['monthly_savings']
@@ -2350,8 +2298,30 @@ if df is not None:
             
             avg_bill = row['avg_amt_per_month']
             u_type = str(row.get('user_type_name', ''))
+            actual_kw = row['actual_kw']
+            payback = row['payback_years']
             
             if "ชั่วคราว" in u_type: return "ยังไม่คุ้ม"
+            
+            # --- 1. แยกลูกค้าที่คำนวณกำลังผลิตได้เยอะเกินพิกัดของแต่ละกลุ่ม เป็น "ลูกค้ากลุ่มพิเศษ" ---
+            is_special = False
+            if "บ้านอยู่อาศัย" in u_type:
+                if actual_kw > 15: is_special = True
+            elif "กิจการขนาดใหญ่" in u_type:
+                if actual_kw > 5000: is_special = True
+            else:
+                # สำหรับ กิจการขนาดเล็ก/กลาง, ส่วนราชการ, อาคารพาณิชย์ ฯลฯ
+                if actual_kw > 150: is_special = True
+                
+            if is_special:
+                # ใช้อีกเกณฑ์นึงสำหรับกลุ่มพิเศษ: เช่น คืนทุนต้องไม่เกิน 6 ปี และค่าไฟต้องสูงกว่า 20,000 บาท
+                if payback <= 6 and avg_bill >= 20000:
+                    return "ควรติด (ลูกค้ากลุ่มพิเศษ)"
+                else:
+                    return "ยังไม่คุ้ม (ลูกค้ากลุ่มพิเศษ)"
+            
+            # --- 2. เกณฑ์ปกติสำหรับลูกค้าทั่วไป ---
+            if payback > 7: return "ยังไม่คุ้ม"
             
             if "กิจการขนาดใหญ่" in u_type:
                 if avg_bill >= 30000: return "ควรติด"
@@ -2396,6 +2366,8 @@ if df is not None:
         # --- สรุปภาพรวมลูกค้าที่ควรติดโซล่าร์เซลล์ ---
         total_cust = len(display_df)
         recommended_cust = len(display_df[display_df['คำแนะนำ'] == 'ควรติด'])
+        # นับรวมทั้ง "ควรติด" และ "ควรติด (ลูกค้ากลุ่มพิเศษ)"
+        recommended_cust = len(display_df[display_df['คำแนะนำ'].str.startswith('ควรติด')])
         pct_recommended = (recommended_cust / total_cust * 100) if total_cust > 0 else 0
         
         st.markdown("##### สรุปสัดส่วนกลุ่มเป้าหมาย (ก่อนใช้ตัวกรอง)")
@@ -2427,7 +2399,7 @@ if df is not None:
             with fcol1:
                 filter_status = st.radio(
                     "สถานะคำแนะนำ:",
-                    options=["แสดงทั้งหมด", "ควรติด", "ยังไม่คุ้ม"],
+                    options=["แสดงทั้งหมด", "ควรติด (รวมกลุ่มพิเศษ)", "เฉพาะลูกค้ากลุ่มพิเศษ", "ยังไม่คุ้ม"],
                     horizontal=True,
                     index=1 # ตั้งค่าเริ่มต้นให้เลือกโชว์เฉพาะ 'ควรติด' 
                 )
@@ -2440,16 +2412,20 @@ if df is not None:
                     default=unique_types
                 )
             # นำตัวกรองทั้งหมดมาตัดข้อมูลในตาราง
-            if filter_status != "แสดงทั้งหมด":
-                display_df = display_df[display_df['คำแนะนำ'] == filter_status]
+            if filter_status == "ควรติด (รวมกลุ่มพิเศษ)":
+                display_df = display_df[display_df['คำแนะนำ'].str.startswith('ควรติด')]
+            elif filter_status == "เฉพาะลูกค้ากลุ่มพิเศษ":
+                display_df = display_df[display_df['คำแนะนำ'].str.contains('ลูกค้ากลุ่มพิเศษ')]
+            elif filter_status == "ยังไม่คุ้ม":
+                display_df = display_df[display_df['คำแนะนำ'].str.startswith('ยังไม่คุ้ม')]
                 
             if filter_user_types:
                 display_df = display_df[display_df['ประเภทผู้ใช้ไฟ'].isin(filter_user_types)]
             
             display_df = display_df.reset_index(drop=True)
 
-        # กรองข้อมูลเอาเฉพาะกลุ่มที่ "ควรติด" และ "บริษัทได้กำไร"
-        profitable_df = display_df[(display_df['คำแนะนำ'] == 'ควรติด') & (display_df['กำไรบริษัท (บาท)'] > 0)].copy()
+        # กรองข้อมูลเอาเฉพาะกลุ่มที่ "ควรติด" (รวมกลุ่มพิเศษ) และ "บริษัทได้กำไร"
+        profitable_df = display_df[(display_df['คำแนะนำ'].str.startswith('ควรติด')) & (display_df['กำไรบริษัท (บาท)'] > 0)].copy()
 
         # --- เพิ่มระบบวิเคราะห์ "โอกาสปิดการขาย" (Lead Scoring) ---
         def evaluate_lead(row):
@@ -2535,10 +2511,15 @@ if df is not None:
             "กำไรบริษัท (บาท)": "฿ {:,.0f}"
         }
         
+        # แยกข้อมูลลูกค้ากลุ่มพิเศษออกมา
+        special_leads_df = display_df[display_df['คำแนะนำ'].str.contains('ลูกค้ากลุ่มพิเศษ', na=False)].copy()
+
         # สร้าง Tabs เพื่อแยกตารางการแสดงผล
-        tab_all, tab_hot = st.tabs([
+        tab_all, tab_hot, tab_special, tab_sim = st.tabs([
             f"บ้านที่ควรติดทั้งหมด ({len(display_df)} ราย)", 
-            f"โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)"
+            f"โอกาสปิดการขายสูง ({len(hot_leads_df)} ราย)",
+            f"ลูกค้ากลุ่มพิเศษ ({len(special_leads_df)} ราย)",
+            f"จำลองโปรเจกต์รายใหญ่ ({len(special_leads_df)} ราย)"
         ])
         
         with tab_all:
@@ -2601,6 +2582,170 @@ if df is not None:
                     )
             else:
                 st.info("ไม่มีข้อมูลลูกค้ากลุ่ม Hot Leads ในขณะนี้")
+                
+        with tab_special:
+            st.markdown("#### กลุ่มลูกค้ารายใหญ่ (ลูกค้ากลุ่มพิเศษ)")
+            st.markdown("ลูกค้ากลุ่มนี้คือลูกค้าที่คำนวณแล้วต้องใช้แผงโซล่าร์เซลล์จำนวนมากเกินกว่าพิกัดทั่วไป ซึ่งถือเป็นโปรเจกต์ขนาดใหญ่ที่น่าสนใจสำหรับการเข้าไปนำเสนอขาย")
+            
+            st.dataframe(special_leads_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            if not special_leads_df.empty:
+                buffer_special = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer_special, engine='xlsxwriter') as writer:
+                        special_leads_df.to_excel(writer, index=False, sheet_name='Special_Customers')
+                    
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อลูกค้ากลุ่มพิเศษ (Excel)",
+                        data=buffer_special.getvalue(),
+                        file_name="Special_Target_Customers.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        key="btn_dl_special_excel"
+                    )
+                except ImportError:
+                    csv_data_special = special_leads_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="ดาวน์โหลดรายชื่อลูกค้ากลุ่มพิเศษ (CSV)",
+                        data=csv_data_special,
+                        file_name="Special_Target_Customers.csv",
+                        mime="text/csv",
+                        type="primary",
+                        key="btn_dl_special_csv"
+                    )
+            else:
+                st.info("ไม่มีข้อมูลลูกค้ากลุ่มพิเศษในขณะนี้")
+                
+        with tab_sim:
+            st.markdown("#### 🏢 ตารางจำลองขนาดโครงการ (ข้อจำกัดพื้นที่/หม้อแปลง)")
+            st.markdown("""
+            เพื่อป้องกันไม่ให้ระบบประเมินขนาดแผงออกมา **โอเวอร์จนเกินไป (Over-sized)** ตารางนี้จึงนำลูกค้ารายใหญ่มาจำลองด้วย **ขนาดที่เหมาะสมกับความเป็นจริง** มากที่สุด:
+            1. **บ้านพักอาศัย:** จำกัดสูงสุดไม่เกิน 15 kW (~30 แผง) ตามขนาดหลังคาทั่วไปและข้อจำกัด กฟภ. (3 เฟส)
+            2. **อาคารพาณิชย์ / SME / โรงเรียน:** จำกัดสูงสุดไม่เกิน 150 kW (~300 แผง)
+            3. **โรงงานอุตสาหกรรมขนาดใหญ่:** จำกัดสูงสุดไม่เกิน 5,000 kW หรือ 5 MW (~9,000 แผง)
+            """)
+            
+            if not special_leads_df.empty:
+                # ดึงข้อมูลตั้งต้น (cust_summary) มาเพื่อคำนวณใหม่
+                sim_raw_df = cust_summary[cust_summary[customer_col].isin(special_leads_df['หมายเลขผู้ใช้ไฟ'])].copy()
+                
+                # 1. ฟังก์ชันจำกัดเพดานขนาดติดตั้ง (Capping)
+                def apply_realistic_cap(row):
+                    u_type = str(row['user_type_name'])
+                    calc_kw = row['actual_kw']
+                    
+                    if "บ้าน" in u_type:
+                        max_kw = 15.0
+                    elif "กิจการขนาดใหญ่" in u_type:
+                        max_kw = 5000.0
+                    else:
+                        max_kw = 150.0
+                        
+                    capped_kw = min(calc_kw, max_kw)
+                    panels = np.ceil(capped_kw / 0.55)
+                    return panels * 0.55, panels
+
+                sim_raw_df[['capped_kw', 'capped_panels']] = sim_raw_df.apply(
+                    lambda row: apply_realistic_cap(row), axis=1, result_type='expand'
+                )
+                
+                # 2. คำนวณไฟที่ผลิตได้และส่วนประหยัดใหม่
+                sim_raw_df['solar_kwh_produced'] = sim_raw_df['capped_kw'] * sim_raw_df['kwh_per_kw_month_adjusted']
+                sim_raw_df['kwh_saved'] = np.minimum(sim_raw_df['solar_kwh_produced'], sim_raw_df['avg_kwh_per_month'])
+                
+                sim_raw_df['monthly_savings'] = sim_raw_df['solar_kwh_produced'] * sim_raw_df['avg_rate']
+                sim_raw_df['monthly_savings'] = np.minimum(sim_raw_df['monthly_savings'], sim_raw_df['avg_amt_per_month'])
+                
+                sim_raw_df['cost_after_solar'] = sim_raw_df['avg_amt_per_month'] - sim_raw_df['monthly_savings']
+                
+                # 3. คำนวณราคาโปรเจกต์ EPC Rate 
+                def get_project_investment(kw):
+                    if kw <= 3: return 145000
+                    elif kw <= 5: return 200000
+                    elif kw <= 10: return 329000
+                    elif kw <= 15: return 454900
+                    elif kw <= 150: return kw * 26000
+                    else: return kw * 24000
+                    
+                def get_project_cost(kw):
+                    if kw <= 15: return kw * 22000
+                    elif kw <= 150: return kw * 19000
+                    else: return kw * 17000
+                
+                sim_raw_df['investment'] = sim_raw_df['capped_kw'].apply(get_project_investment)
+                sim_raw_df['company_cost'] = sim_raw_df['capped_kw'].apply(get_project_cost)
+                sim_raw_df['company_profit'] = sim_raw_df['investment'] - sim_raw_df['company_cost']
+                
+                sim_raw_df['payback_years'] = np.where(sim_raw_df['monthly_savings'] > 0,
+                                                       sim_raw_df['investment'] / (sim_raw_df['monthly_savings'] * 12),
+                                                       99)
+                
+                def recommend_package_sim(kw):
+                    if kw <= 15: return f"{kw:.0f} kW"
+                    elif kw <= 150: return "EPC <150kW"
+                    else: return "EPC Mega Project"
+                sim_raw_df['recommended_package'] = sim_raw_df['capped_kw'].apply(recommend_package_sim)
+                
+                sim_raw_df['should_install'] = "✅ ควรติด (สมจริง)"
+
+                sim_display_df = sim_raw_df[[
+                    customer_col, 'user_type_name', 'should_install', 'pm25_real', 'light_intensity', 
+                    'avg_kwh_per_month', 'kwh_saved', 'avg_amt_per_month', 'monthly_savings', 'cost_after_solar',
+                    'capped_kw', 'recommended_package', 'capped_panels', 'investment', 'company_profit', 'payback_years'
+                ]].copy()
+
+                sim_display_df = sim_display_df.rename(columns={
+                    customer_col: 'หมายเลขผู้ใช้ไฟ',
+                    'user_type_name': 'ประเภทผู้ใช้ไฟ',
+                    'should_install': 'คำแนะนำ',
+                    'pm25_real': 'ฝุ่น PM2.5 (μg/m³)',
+                    'light_intensity': 'ความเข้มแสง (%)',
+                    'avg_kwh_per_month': 'ใช้ไฟเดิม (kWh/เดือน)',
+                    'kwh_saved': 'ประหยัดไฟ (kWh/เดือน)',
+                    'avg_amt_per_month': 'ค่าไฟเดิม (บาท/เดือน)',
+                    'monthly_savings': 'ประหยัดเงิน (บาท/เดือน)',
+                    'cost_after_solar': 'ค่าไฟสุทธิ (บาท/เดือน)',
+                    'capped_kw': 'ขนาดติดตั้ง (kW)',
+                    'recommended_package': 'แพ็กเกจที่แนะนำ',
+                    'capped_panels': 'จำนวนแผง (แผงละ 550W)',
+                    'investment': 'ราคาขายแพ็กเกจ (บาท)',
+                    'company_profit': 'กำไรบริษัท (บาท)',
+                    'payback_years': 'คืนทุน (ปี)'
+                })
+                
+                sim_display_df['จำนวนแผง (แผงละ 550W)'] = sim_display_df['จำนวนแผง (แผงละ 550W)'].astype(int)
+                sim_display_df['ประหยัดเงิน (บาท/เดือน)'] = sim_display_df['ประหยัดเงิน (บาท/เดือน)'].apply(format_savings_range)
+                sim_display_df = sim_display_df.sort_values(by='กำไรบริษัท (บาท)', ascending=False).reset_index(drop=True)
+                
+                st.dataframe(sim_display_df.style.format(style_format), column_config=table_config, hide_index=True, use_container_width=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                buffer_sim = io.BytesIO()
+                try:
+                    with pd.ExcelWriter(buffer_sim, engine='xlsxwriter') as writer:
+                        sim_display_df.to_excel(writer, index=False, sheet_name='Simulated_Projects')
+                    
+                    st.download_button(
+                        label="ดาวน์โหลดตารางจำลองโปรเจกต์ (Excel)",
+                        data=buffer_sim.getvalue(),
+                        file_name="Simulated_Projects.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        type="primary",
+                        key="btn_dl_sim_excel"
+                    )
+                except ImportError:
+                    csv_data_sim = sim_display_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        label="ดาวน์โหลดตารางจำลองโปรเจกต์ (CSV)",
+                        data=csv_data_sim,
+                        file_name="Simulated_Projects.csv",
+                        mime="text/csv",
+                        type="primary",
+                        key="btn_dl_sim_csv"
+                    )
+            else:
+                st.info("ไม่มีข้อมูลลูกค้ากลุ่มพิเศษที่เข้าเกณฑ์ในขณะนี้")
         
         st.caption("""
         **สมมติฐานการคำนวณแบบอิงค่าความเป็นจริง (Realistic Simulation):**
